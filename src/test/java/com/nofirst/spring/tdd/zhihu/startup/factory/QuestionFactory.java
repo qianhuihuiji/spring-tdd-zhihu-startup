@@ -1,6 +1,5 @@
 package com.nofirst.spring.tdd.zhihu.startup.factory;
 
-
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 
 import java.util.Date;
