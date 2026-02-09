@@ -1,6 +1,9 @@
 package com.nofirst.spring.tdd.zhihu.startup.integration;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nofirst.spring.tdd.zhihu.startup.common.CommonResult;
+import com.nofirst.spring.tdd.zhihu.startup.common.ResultCode;
 import com.nofirst.spring.tdd.zhihu.startup.factory.QuestionFactory;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
@@ -18,6 +21,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // 添加TestInstance注解，设置为PER_CLASS模式，允许@BeforeAll使用非static方法
@@ -72,15 +76,21 @@ public class ViewQuestionsTests extends BaseContainerTest {
                         get("/questions/{id}", question.getId())
                                 .accept(MediaType.APPLICATION_JSON)
                 )
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        // then：1. 解析JSON为QuestionVo（结构不匹配时此处直接报错）
-        QuestionVo questionVo = objectMapper.readValue(jsonResponse, QuestionVo.class);
+        // then：1. 解析JSON为QuestionVo，用TypeReference解决泛型擦除问题，确保data字段解析为QuestionVo
+        TypeReference<CommonResult<QuestionVo>> typeRef = new TypeReference<>() {
+        };
+        CommonResult<QuestionVo> commonResult = objectMapper.readValue(jsonResponse, typeRef);
 
         // then：2. 断言QuestionVo的核心字段（覆盖所有关键字段）
+        assertThat(commonResult.getCode()).isEqualTo(ResultCode.SUCCESS.getCode());
+
+        QuestionVo questionVo = commonResult.getData();
         assertThat(questionVo.getId()).isEqualTo(question.getId());
         assertThat(questionVo.getUserId()).isEqualTo(question.getUserId());
         assertThat(questionVo.getTitle()).isEqualTo(question.getTitle());

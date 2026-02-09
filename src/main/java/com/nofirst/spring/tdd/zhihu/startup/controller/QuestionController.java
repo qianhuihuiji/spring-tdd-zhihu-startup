@@ -1,5 +1,6 @@
 package com.nofirst.spring.tdd.zhihu.startup.controller;
 
+import com.nofirst.spring.tdd.zhihu.startup.common.CommonResult;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
 import com.nofirst.spring.tdd.zhihu.startup.service.QuestionService;
 import lombok.AllArgsConstructor;
@@ -19,7 +20,8 @@ public class QuestionController {
     }
 
     @GetMapping("/questions/{id}")
-    public QuestionVo show(@PathVariable Integer id) {
-        return questionService.show(id);
+    public CommonResult<QuestionVo> show(@PathVariable Integer id) {
+        QuestionVo questionVo = questionService.show(id);
+        return CommonResult.success(questionVo);
     }
 }
