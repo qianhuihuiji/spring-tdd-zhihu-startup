@@ -4,5 +4,5 @@
 
 > 注：Flyway是一个简单开源数据库版本控制器（约定大于配置），主要提供migrate、clean、info、validate、baseline、repair等命令。它支持SQL（PL/SQL、T-SQL）方式和Java方式，支持命令行客户端等，还提供一系列的插件支持（Maven、Gradle、SBT、ANT等）。
 
-此外，我们使用了MyBatis作为ORM框架，并且配置了MyBatis Generator，用以生成数据库映射实体类。使用时只需要调用 `Generator#main()`即可。
+此外，我们使用了MyBatis作为ORM框架，并且配置了MyBatis Generator，用以生成数据库映射实体类。使用时只需要先修改generatorConfig.xml配置文件中需要生成的表名，再调用 Generator#main()即可。
 
