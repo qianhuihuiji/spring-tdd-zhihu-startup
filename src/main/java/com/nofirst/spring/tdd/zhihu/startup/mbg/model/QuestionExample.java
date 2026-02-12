@@ -414,6 +414,66 @@ public class QuestionExample {
             addCriterion("updated_at not between", value1, value2, "updatedAt");
             return (Criteria) this;
         }
+
+        public Criteria andPublishedAtIsNull() {
+            addCriterion("published_at is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublishedAtIsNotNull() {
+            addCriterion("published_at is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublishedAtEqualTo(Date value) {
+            addCriterion("published_at =", value, "publishedAt");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublishedAtNotEqualTo(Date value) {
+            addCriterion("published_at <>", value, "publishedAt");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublishedAtGreaterThan(Date value) {
+            addCriterion("published_at >", value, "publishedAt");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublishedAtGreaterThanOrEqualTo(Date value) {
+            addCriterion("published_at >=", value, "publishedAt");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublishedAtLessThan(Date value) {
+            addCriterion("published_at <", value, "publishedAt");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublishedAtLessThanOrEqualTo(Date value) {
+            addCriterion("published_at <=", value, "publishedAt");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublishedAtIn(List<Date> values) {
+            addCriterion("published_at in", values, "publishedAt");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublishedAtNotIn(List<Date> values) {
+            addCriterion("published_at not in", values, "publishedAt");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublishedAtBetween(Date value1, Date value2) {
+            addCriterion("published_at between", value1, value2, "publishedAt");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublishedAtNotBetween(Date value1, Date value2) {
+            addCriterion("published_at not between", value1, value2, "publishedAt");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

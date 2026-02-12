@@ -1,6 +1,7 @@
 package com.nofirst.spring.tdd.zhihu.startup.service.impl;
 
 import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotExistedException;
+import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotPublishedException;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
@@ -22,6 +23,9 @@ public class QuestionServiceImpl implements QuestionService {
         Question question = questionMapper.selectByPrimaryKey(id);
         if (Objects.isNull(question)) {
             throw new QuestionNotExistedException();
+        }
+        if (Objects.isNull(question.getPublishedAt())) {
+            throw new QuestionNotPublishedException();
         }
 
         QuestionVo questionVo = new QuestionVo();

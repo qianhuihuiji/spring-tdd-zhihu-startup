@@ -7,6 +7,7 @@
     <result column="title" jdbcType="VARCHAR" property="title" />
     <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
     <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
+    <result column="published_at" jdbcType="TIMESTAMP" property="publishedAt" />
   </resultMap>
   <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question">
     <result column="content" jdbcType="LONGVARCHAR" property="content" />
@@ -70,7 +71,7 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    id, user_id, title, created_at, updated_at
+    id, user_id, title, created_at, updated_at, published_at
   </sql>
   <sql id="Blob_Column_List">
     content
@@ -128,9 +129,11 @@
       SELECT LAST_INSERT_ID()
     </selectKey>
     insert into question (user_id, title, created_at, 
-      updated_at, content)
+      updated_at, published_at, content
+      )
     values (#{userId,jdbcType=INTEGER}, #{title,jdbcType=VARCHAR}, #{createdAt,jdbcType=TIMESTAMP}, 
-      #{updatedAt,jdbcType=TIMESTAMP}, #{content,jdbcType=LONGVARCHAR})
+      #{updatedAt,jdbcType=TIMESTAMP}, #{publishedAt,jdbcType=TIMESTAMP}, #{content,jdbcType=LONGVARCHAR}
+      )
   </insert>
   <insert id="insertSelective" parameterType="com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
@@ -150,6 +153,9 @@
       <if test="updatedAt != null">
         updated_at,
       </if>
+      <if test="publishedAt != null">
+        published_at,
+      </if>
       <if test="content != null">
         content,
       </if>
@@ -166,6 +172,9 @@
       </if>
       <if test="updatedAt != null">
         #{updatedAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="publishedAt != null">
+        #{publishedAt,jdbcType=TIMESTAMP},
       </if>
       <if test="content != null">
         #{content,jdbcType=LONGVARCHAR},
@@ -196,6 +205,9 @@
       <if test="row.updatedAt != null">
         updated_at = #{row.updatedAt,jdbcType=TIMESTAMP},
       </if>
+      <if test="row.publishedAt != null">
+        published_at = #{row.publishedAt,jdbcType=TIMESTAMP},
+      </if>
       <if test="row.content != null">
         content = #{row.content,jdbcType=LONGVARCHAR},
       </if>
@@ -211,6 +223,7 @@
       title = #{row.title,jdbcType=VARCHAR},
       created_at = #{row.createdAt,jdbcType=TIMESTAMP},
       updated_at = #{row.updatedAt,jdbcType=TIMESTAMP},
+      published_at = #{row.publishedAt,jdbcType=TIMESTAMP},
       content = #{row.content,jdbcType=LONGVARCHAR}
     <if test="example != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -222,7 +235,8 @@
       user_id = #{row.userId,jdbcType=INTEGER},
       title = #{row.title,jdbcType=VARCHAR},
       created_at = #{row.createdAt,jdbcType=TIMESTAMP},
-      updated_at = #{row.updatedAt,jdbcType=TIMESTAMP}
+      updated_at = #{row.updatedAt,jdbcType=TIMESTAMP},
+      published_at = #{row.publishedAt,jdbcType=TIMESTAMP}
     <if test="example != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -242,6 +256,9 @@
       <if test="updatedAt != null">
         updated_at = #{updatedAt,jdbcType=TIMESTAMP},
       </if>
+      <if test="publishedAt != null">
+        published_at = #{publishedAt,jdbcType=TIMESTAMP},
+      </if>
       <if test="content != null">
         content = #{content,jdbcType=LONGVARCHAR},
       </if>
@@ -254,6 +271,7 @@
       title = #{title,jdbcType=VARCHAR},
       created_at = #{createdAt,jdbcType=TIMESTAMP},
       updated_at = #{updatedAt,jdbcType=TIMESTAMP},
+      published_at = #{publishedAt,jdbcType=TIMESTAMP},
       content = #{content,jdbcType=LONGVARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
@@ -262,7 +280,8 @@
     set user_id = #{userId,jdbcType=INTEGER},
       title = #{title,jdbcType=VARCHAR},
       created_at = #{createdAt,jdbcType=TIMESTAMP},
-      updated_at = #{updatedAt,jdbcType=TIMESTAMP}
+      updated_at = #{updatedAt,jdbcType=TIMESTAMP},
+      published_at = #{publishedAt,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>
