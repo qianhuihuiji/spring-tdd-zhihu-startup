@@ -64,7 +64,7 @@ public class PostAnswersTest extends BaseContainerTest {
     @Test
     void user_can_post_an_answer_to_a_question() throws Exception {
         // given：准备测试数据
-        Question question = QuestionFactory.createQuestion();
+        Question question = QuestionFactory.createPublishedQuestion();
         questionMapper.insert(question);
         AnswerExample answerExample = new AnswerExample();
         long beforeCount = answerMapper.countByExample(answerExample);

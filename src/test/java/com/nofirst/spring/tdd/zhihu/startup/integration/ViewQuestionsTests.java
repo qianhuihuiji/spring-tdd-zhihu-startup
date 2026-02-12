@@ -9,7 +9,6 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.QuestionExample;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
-import org.apache.commons.lang3.time.DateUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,8 +18,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -72,9 +69,7 @@ public class ViewQuestionsTests extends BaseContainerTest {
     @Test
     void user_can_view_a_published_question() throws Exception {
         // given：准备测试数据
-        Question question = QuestionFactory.createQuestion();
-        Date lastWeek = DateUtils.addWeeks(new Date(), -1);
-        question.setPublishedAt(lastWeek);
+        Question question = QuestionFactory.createPublishedQuestion();
         questionMapper.insert(question);
 
         // when：调用接口并获取返回结果
@@ -106,8 +101,7 @@ public class ViewQuestionsTests extends BaseContainerTest {
     @Test
     void user_can_not_view_unpublished_question() throws Exception {
         // given：准备测试数据
-        Question question = QuestionFactory.createQuestion();
-        question.setPublishedAt(null);
+        Question question = QuestionFactory.createUnpublishedQuestion();
         questionMapper.insert(question);
 
         // when:

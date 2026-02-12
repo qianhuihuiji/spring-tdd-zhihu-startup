@@ -47,7 +47,7 @@ public class AnswerServiceImplTest {
     @Test
     void can_post_an_answer_to_a_question() {
         // given
-        Question question = QuestionFactory.createQuestion();
+        Question question = QuestionFactory.createPublishedQuestion();
         question.setId(1);
         given(questionMapper.selectByPrimaryKey(question.getId())).willReturn(question);
         // when

@@ -7,15 +7,12 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
 import com.nofirst.spring.tdd.zhihu.startup.service.impl.QuestionServiceImpl;
-import org.apache.commons.lang3.time.DateUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -34,9 +31,7 @@ class QuestionServiceImplTest {
 
     @BeforeEach
     public void setup() {
-        question = QuestionFactory.createQuestion();
-        Date lastWeek = DateUtils.addWeeks(new Date(), -1);
-        question.setPublishedAt(lastWeek);
+        question = QuestionFactory.createPublishedQuestion();
     }
 
     @Test
@@ -71,8 +66,8 @@ class QuestionServiceImplTest {
     @Test
     void get_not_published_question_by_show_method() {
         // given
-        this.question.setPublishedAt(null);
-        given(questionMapper.selectByPrimaryKey(1)).willReturn(this.question);
+        Question unpublishedQuestion = QuestionFactory.createUnpublishedQuestion();
+        given(questionMapper.selectByPrimaryKey(1)).willReturn(unpublishedQuestion);
 
         // then
         assertThatThrownBy(() -> {
