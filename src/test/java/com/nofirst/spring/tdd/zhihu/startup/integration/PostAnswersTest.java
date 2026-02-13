@@ -62,7 +62,7 @@ public class PostAnswersTest extends BaseContainerTest {
     }
 
     @Test
-    void user_can_post_an_answer_to_a_question() throws Exception {
+    void user_can_post_an_answer_to_a_published_question() throws Exception {
         // given：准备测试数据
         Question question = QuestionFactory.createPublishedQuestion();
         questionMapper.insert(question);
@@ -83,5 +83,24 @@ public class PostAnswersTest extends BaseContainerTest {
         // then：数据库中answer数据增加了一条
         long afterCount = answerMapper.countByExample(answerExample);
         assertThat(afterCount).isEqualTo(1);
+    }
+
+    @Test
+    void can_not_post_an_answer_to_an_unpublished_question() throws Exception {
+        // given：准备测试数据
+        Question question = QuestionFactory.createUnpublishedQuestion();
+        questionMapper.insert(question);
+
+        // when:
+        // when：调用接口并获取返回结果
+        AnswerDto answer = AnswerFactory.createAnswerDto();
+        this.mockMvc.perform(post("/questions/{id}/answers", question.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSONUtil.toJsonStr(answer))
+                )
+                // then:
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(ResultCode.FAILED.getCode()))
+                .andExpect(jsonPath("$.message").value("question not publish"));
     }
 }
