@@ -6,3 +6,4 @@
 
 此外，我们使用了MyBatis作为ORM框架，并且配置了MyBatis Generator，用以生成数据库映射实体类。使用时只需要先修改`generatorConfig.xml`配置文件中需要生成的表名，再调用 `Generator#main()`即可。
 
+添加了全部的错误处理器`GlobalExceptionHandler`
