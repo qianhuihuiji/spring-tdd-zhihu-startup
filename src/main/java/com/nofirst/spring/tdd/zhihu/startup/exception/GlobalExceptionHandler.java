@@ -4,7 +4,6 @@ package com.nofirst.spring.tdd.zhihu.startup.exception;
 import com.nofirst.spring.tdd.zhihu.startup.common.CommonResult;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.sql.SQLSyntaxErrorException;
 import java.util.Set;
 
 /**
@@ -95,21 +93,5 @@ public class GlobalExceptionHandler {
         messageBuilder.replace(messageBuilder.length() - 1, messageBuilder.length(), "");
 
         return CommonResult.validateFailed(messageBuilder.toString());
-    }
-
-    /**
-     * Handle sql syntax error exception common result.
-     *
-     * @param e the e
-     * @return the common result
-     */
-    @ResponseBody
-    @ExceptionHandler(value = SQLSyntaxErrorException.class)
-    public CommonResult handleSQLSyntaxErrorException(SQLSyntaxErrorException e) {
-        String message = e.getMessage();
-        if (StringUtils.isNotEmpty(message) && message.contains("denied")) {
-            message = "演示环境暂无修改权限，如需修改数据可本地搭建后台服务！";
-        }
-        return CommonResult.failed(message);
     }
 }

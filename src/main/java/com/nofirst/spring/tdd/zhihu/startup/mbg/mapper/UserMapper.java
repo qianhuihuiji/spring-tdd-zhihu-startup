@@ -2,8 +2,9 @@ package com.nofirst.spring.tdd.zhihu.startup.mbg.mapper;
 
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.User;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.UserExample;
-import java.util.List;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface UserMapper {
     long countByExample(UserExample example);

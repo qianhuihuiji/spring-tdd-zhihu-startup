@@ -8,6 +8,7 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
+import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.AnswerService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class AnswerServiceImpl implements AnswerService {
 
 
     @Override
-    public void store(Integer questionId, AnswerDto answerDto) {
+    public void store(Integer questionId, AnswerDto answerDto, AccountUser accountUser) {
         Question question = questionMapper.selectByPrimaryKey(questionId);
         if (Objects.isNull(question)) {
             throw new QuestionNotExistedException();
@@ -35,7 +36,7 @@ public class AnswerServiceImpl implements AnswerService {
         Date now = new Date();
         Answer answer = new Answer();
         answer.setQuestionId(questionId);
-        answer.setUserId(1);
+        answer.setUserId(accountUser.getUserId());
         answer.setCreatedAt(now);
         answer.setUpdatedAt(now);
         answer.setContent(answerDto.getContent());

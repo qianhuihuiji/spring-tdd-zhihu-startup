@@ -11,6 +11,7 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
+import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.impl.AnswerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +53,8 @@ public class AnswerServiceImplTest {
         question.setId(1);
         given(questionMapper.selectByPrimaryKey(question.getId())).willReturn(question);
         // when
-        answerService.store(1, this.defaultAnswerDto);
+        AccountUser accountUser = new AccountUser(1, "password", "username");
+        answerService.store(1, this.defaultAnswerDto, accountUser);
 
         // then
         verify(answerMapper, times(1)).insert(argThat(new AnswerMatcher(defaultAnswer)));
@@ -64,9 +66,10 @@ public class AnswerServiceImplTest {
         given(questionMapper.selectByPrimaryKey(1)).willReturn(null);
 
         // then
+        AccountUser accountUser = new AccountUser(1, "password", "username");
         assertThatThrownBy(() -> {
             // when
-            answerService.store(1, this.defaultAnswerDto);
+            answerService.store(1, this.defaultAnswerDto, accountUser);
         }).isInstanceOf(QuestionNotExistedException.class)
                 .hasMessageStartingWith("question not exist");
     }
@@ -79,9 +82,10 @@ public class AnswerServiceImplTest {
         given(questionMapper.selectByPrimaryKey(question.getId())).willReturn(question);
 
         // then
+        AccountUser accountUser = new AccountUser(1, "password", "username");
         assertThatThrownBy(() -> {
             // when
-            answerService.store(1, this.defaultAnswerDto);
+            answerService.store(1, this.defaultAnswerDto, accountUser);
         }).isInstanceOf(QuestionNotPublishedException.class)
                 .hasMessageStartingWith("question not publish");
     }

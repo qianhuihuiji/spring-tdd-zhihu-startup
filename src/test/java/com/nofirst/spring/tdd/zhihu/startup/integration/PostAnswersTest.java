@@ -1,6 +1,6 @@
 package com.nofirst.spring.tdd.zhihu.startup.integration;
 
-import cn.hutool.json.JSONUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nofirst.spring.tdd.zhihu.startup.common.ResultCode;
 import com.nofirst.spring.tdd.zhihu.startup.factory.AnswerFactory;
 import com.nofirst.spring.tdd.zhihu.startup.factory.QuestionFactory;
@@ -16,11 +16,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -40,11 +42,16 @@ public class PostAnswersTest extends BaseContainerTest {
     @Autowired
     private AnswerMapper answerMapper;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
 
     @BeforeAll
     public void setupMockMvc() {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(context)
+                // 启用 spring security
+                .apply(springSecurity())
                 .build();
     }
 
@@ -62,11 +69,30 @@ public class PostAnswersTest extends BaseContainerTest {
     }
 
     @Test
-    void user_can_post_an_answer_to_a_published_question() throws Exception {
+    void guests_may_not_post_an_answer() throws Exception {
+        // given
+        Question question = QuestionFactory.createPublishedQuestion();
+        question.setId(1);
+
+        AnswerDto answer = AnswerFactory.createAnswerDto();
+        this.mockMvc.perform(post("/questions/{id}/answers", question.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(answer))
+                )
+                .andDo(print())
+                .andExpect(status().is(401));
+    }
+
+    @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void signed_in_user_can_post_an_answer_to_a_published_question() throws Exception {
         // given：准备测试数据
         Question question = QuestionFactory.createPublishedQuestion();
         questionMapper.insert(question);
         AnswerExample answerExample = new AnswerExample();
+        AnswerExample.Criteria criteria = answerExample.createCriteria();
+        // John 用户的userId就是2
+        criteria.andUserIdEqualTo(2);
         long beforeCount = answerMapper.countByExample(answerExample);
         assertThat(beforeCount).isEqualTo(0);
 
@@ -74,7 +100,7 @@ public class PostAnswersTest extends BaseContainerTest {
         AnswerDto answer = AnswerFactory.createAnswerDto();
         this.mockMvc.perform(post("/questions/{id}/answers", question.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JSONUtil.toJsonStr(answer))
+                        .content(objectMapper.writeValueAsString(answer))
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -86,21 +112,41 @@ public class PostAnswersTest extends BaseContainerTest {
     }
 
     @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
     void can_not_post_an_answer_to_an_unpublished_question() throws Exception {
         // given：准备测试数据
         Question question = QuestionFactory.createUnpublishedQuestion();
         questionMapper.insert(question);
 
-        // when:
         // when：调用接口并获取返回结果
         AnswerDto answer = AnswerFactory.createAnswerDto();
         this.mockMvc.perform(post("/questions/{id}/answers", question.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JSONUtil.toJsonStr(answer))
+                        .content(objectMapper.writeValueAsString(answer))
                 )
                 // then:
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(ResultCode.FAILED.getCode()))
                 .andExpect(jsonPath("$.message").value("question not publish"));
+    }
+
+    @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void content_is_required_to_post_answers() throws Exception {
+        // given
+        Question question = QuestionFactory.createPublishedQuestion();
+        questionMapper.insert(question);
+        AnswerDto answerDto = AnswerFactory.createAnswerDto();
+        answerDto.setContent("");
+
+        // when
+        this.mockMvc.perform(post("/questions/{id}/answers", question.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(answerDto))
+                )
+                // then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(ResultCode.VALIDATE_FAILED.getCode()))
+                .andExpect(jsonPath("$.message").value("答案内容不能为空"));
     }
 }
