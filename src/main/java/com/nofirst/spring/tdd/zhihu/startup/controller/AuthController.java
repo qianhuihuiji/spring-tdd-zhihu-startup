@@ -1,7 +1,6 @@
 package com.nofirst.spring.tdd.zhihu.startup.controller;
 
 import com.nofirst.spring.tdd.zhihu.startup.common.CommonResult;
-import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.UserMapper;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.UserLoginDto;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.security.JwtUtils;
@@ -12,7 +11,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,9 +23,9 @@ import org.springframework.web.bind.annotation.RestController;
  * The type User controller.
  */
 @RestController
-@RequestMapping(path = "/user", produces = "application/json;charset=utf-8")
+@RequestMapping(path = "/auth", produces = "application/json;charset=utf-8")
 @AllArgsConstructor
-public class UserController {
+public class AuthController {
 
     private AuthenticationManager authenticationManager;
     private JwtUtils jwtUtils;
