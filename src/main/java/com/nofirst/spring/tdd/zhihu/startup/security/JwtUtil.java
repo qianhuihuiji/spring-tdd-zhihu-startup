@@ -20,7 +20,9 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class JwtUtils {
+public class JwtUtil {
+
+    public static final String HEADER = "Authorization";
 
 
     // JWT 密钥（生产环境需放在配置中心，加密存储）
@@ -31,11 +33,12 @@ public class JwtUtils {
     private Long expire;
 
     // 生成 JWT Token（携带用户ID、角色信息）
-    public String generateToken(Integer userId, String username) {
+    public String generateToken(Long userId, String username, String role) {
         // 1. 构建载荷信息
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("username", username);
+        claims.put("role", role);
         // 2. 生成 Token
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         Key key = Keys.hmacShaKeyFor(keyBytes);
@@ -64,6 +67,10 @@ public class JwtUtils {
             log.error("Token 无效", e);
             throw new RuntimeException("Token 无效");
         }
+    }
+
+    public boolean isTokenExpired(Date expiration) {
+        return expiration.before(new Date());
     }
 
     // 验证 Token 有效性（是否过期、签名是否正确）

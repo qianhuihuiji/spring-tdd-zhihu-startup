@@ -1,7 +1,10 @@
 package com.nofirst.spring.tdd.zhihu.startup.config;
 
+import com.nofirst.spring.tdd.zhihu.startup.security.JwtAccessDeniedHandler;
+import com.nofirst.spring.tdd.zhihu.startup.security.JwtAuthenticationEntryPoint;
 import com.nofirst.spring.tdd.zhihu.startup.security.JwtAuthenticationFilter;
 import jakarta.annotation.Resource;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,10 +20,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@AllArgsConstructor
 public class SecurityConfig {
 
-    @Resource
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     // 密码加密器（BCrypt 加密，不可逆）
     @Bean
@@ -47,7 +52,11 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll() // 登录接口放行
                         .requestMatchers("/questions").permitAll() // 公开接口放行
                         .anyRequest().authenticated() // 其他接口需认证
-                )
+                )// 异常处理器
+                .exceptionHandling(
+                        exception ->
+                                exception.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                                        .accessDeniedHandler(jwtAccessDeniedHandler))
                 // 添加 JWT 过滤器（在用户名密码过滤器之前执行）
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

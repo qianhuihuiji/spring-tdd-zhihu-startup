@@ -1,13 +1,16 @@
 package com.nofirst.spring.tdd.zhihu.startup.security;
 
-import jakarta.annotation.Resource;
+import com.nofirst.spring.tdd.zhihu.startup.common.ResultCode;
+import com.nofirst.spring.tdd.zhihu.startup.exception.ApiException;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -15,39 +18,36 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
+@AllArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    @Resource
-    private JwtUtils jwtUtils;
-    @Resource
+    private JwtUtil jwtUtil;
     private CustomUserDetailsService userDetailsService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 1. 从请求头获取 Token（格式：Bearer {token}）
-        String authHeader = request.getHeader("Authorization");
-        String token = null;
-        String username = null;
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-        }
-        // 2. 解析 Token，获取用户名并认证
-        if (token != null && jwtUtils.validateToken(token)) {
-            username = jwtUtils.parseToken(token).get("username", String.class);
-            // 3. 将用户信息存入 Security 上下文
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities()
-                );
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            }
-        } else {
-            // 如果 Token 无效或不存在，返回 401 Unauthorized
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+        String token = request.getHeader(JwtUtil.HEADER);
+        // 未获取到token，继续往后走，因为后面还有鉴权管理器等去判断是否拥有身份凭证，所以可以放行
+        // 没有token相当于匿名访问，若有一些接口是需要权限的，则不能访问这些接口
+        if (StringUtils.isBlank(token)) {
+            chain.doFilter(request, response);
             return;
         }
-        // 4. 继续执行过滤器链
-        filterChain.doFilter(request, response);
+
+        Claims claims = jwtUtil.parseToken(token);
+        if (claims == null) {
+            throw new ApiException(ResultCode.UNAUTHORIZED, "token异常");
+        }
+        if (jwtUtil.isTokenExpired(claims.getExpiration())) {
+            throw new ApiException(ResultCode.UNAUTHORIZED, "token已过期");
+        }
+
+        String username = claims.getSubject();
+
+        // 构建UsernamePasswordAuthenticationToken，这里密码为null，是因为提供了正确的token，实现自动登录
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, null);
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        chain.doFilter(request, response);
     }
 }
