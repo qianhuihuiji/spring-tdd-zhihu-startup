@@ -1,9 +1,10 @@
-package com.nofirst.spring.tdd.zhihu.startup.integration;
+package com.nofirst.spring.tdd.zhihu.startup.integration.answers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nofirst.spring.tdd.zhihu.startup.common.ResultCode;
 import com.nofirst.spring.tdd.zhihu.startup.factory.AnswerFactory;
 import com.nofirst.spring.tdd.zhihu.startup.factory.QuestionFactory;
+import com.nofirst.spring.tdd.zhihu.startup.integration.BaseContainerTest;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.AnswerMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.AnswerExample;
