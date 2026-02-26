@@ -7,4 +7,6 @@ import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 public interface AnswerService {
 
     void store(Integer questionId, AnswerDto answerDto, AccountUser accountUser);
+
+    void markAsBest(Integer answerId);
 }

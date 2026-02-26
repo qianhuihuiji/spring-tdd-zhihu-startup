@@ -5,6 +5,7 @@ import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotExistedExceptio
 import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotPublishedException;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.AnswerMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapperExt;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
@@ -22,6 +23,7 @@ public class AnswerServiceImpl implements AnswerService {
 
     private final AnswerMapper answerMapper;
     private final QuestionMapper questionMapper;
+    private final QuestionMapperExt questionMapperExt;
 
 
     @Override
@@ -42,5 +44,12 @@ public class AnswerServiceImpl implements AnswerService {
         answer.setContent(answerDto.getContent());
 
         answerMapper.insert(answer);
+    }
+
+
+    @Override
+    public void markAsBest(Integer answerId) {
+        Answer answer = answerMapper.selectByPrimaryKey(answerId);
+        questionMapperExt.markAsBestAnswer(answer.getQuestionId(), answer.getId());
     }
 }
