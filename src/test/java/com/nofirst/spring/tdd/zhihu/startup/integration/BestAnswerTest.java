@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -73,24 +73,37 @@ public class BestAnswerTest extends BaseContainerTest {
     }
 
     @Test
-    @WithMockUser
-    void can_mark_one_answer_as_the_best() throws Exception {
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void only_the_question_creator_can_mark_a_best_answer() throws Exception {
         // given：准备测试数据
-        Question question = QuestionFactory.createPublishedQuestion();
-        questionMapper.insert(question);
-        Answer answer = AnswerFactory.createAnswer(question.getId());
-        answerMapper.insert(answer);
+        Question questionOfOtherUser = QuestionFactory.createPublishedQuestion();
+        questionOfOtherUser.setUserId(1);
+        questionMapper.insert(questionOfOtherUser);
+        Answer answerOfOther = AnswerFactory.createAnswer(questionOfOtherUser.getId());
+        answerMapper.insert(answerOfOther);
 
         // when
-        this.mockMvc.perform(post("/answers/{answerId}/best", answer.getId())
+        this.mockMvc.perform(post("/answers/{answerId}/best", answerOfOther.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                ).andDo(print())
+                .andExpect(status().is(403));
+
+        // given：准备测试数据
+        Question questionOfJohn = QuestionFactory.createPublishedQuestion();
+        questionOfJohn.setUserId(2);
+        questionMapper.insert(questionOfJohn);
+        Answer answerOfJohn = AnswerFactory.createAnswer(questionOfJohn.getId());
+        answerMapper.insert(answerOfJohn);
+
+        // when
+        this.mockMvc.perform(post("/answers/{answerId}/best", answerOfJohn.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                 ).andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()));
 
         // then
-        Question questionAfter = questionMapper.selectByPrimaryKey(question.getId());
-        assertThat(questionAfter.getBestAnswerId()).isEqualTo(answer.getId());
+        Question questionAfter = questionMapper.selectByPrimaryKey(questionOfJohn.getId());
+        assertThat(questionAfter.getBestAnswerId()).isEqualTo(answerOfJohn.getId());
     }
-
 }
