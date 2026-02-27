@@ -2,11 +2,15 @@ package com.nofirst.spring.tdd.zhihu.startup.integration.questions;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageInfo;
 import com.nofirst.spring.tdd.zhihu.startup.common.CommonResult;
 import com.nofirst.spring.tdd.zhihu.startup.common.ResultCode;
+import com.nofirst.spring.tdd.zhihu.startup.factory.AnswerFactory;
 import com.nofirst.spring.tdd.zhihu.startup.factory.QuestionFactory;
 import com.nofirst.spring.tdd.zhihu.startup.integration.BaseContainerTest;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.AnswerMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.QuestionExample;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
@@ -20,6 +24,8 @@ import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -39,6 +45,9 @@ public class ViewQuestionsTests extends BaseContainerTest {
 
     @Autowired
     private QuestionMapper questionMapper;
+
+    @Autowired
+    private AnswerMapper answerMapper;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -118,4 +127,38 @@ public class ViewQuestionsTests extends BaseContainerTest {
                 .andExpect(jsonPath("$.message").value("question not publish"));
     }
 
+    @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void can_see_answers_when_view_a_published_question() throws Exception {
+        // given：准备测试数据
+        Question question = QuestionFactory.createPublishedQuestion();
+        questionMapper.insert(question);
+        List<Answer> answers = AnswerFactory.createAnswerBatch(40, question.getId());
+        for (Answer answer : answers) {
+            answerMapper.insert(answer);
+        }
+
+        // when：调用接口并获取返回结果
+        String jsonResponse = this.mockMvc.perform(
+                        get("/questions/{id}", question.getId())
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // then：1. 解析JSON为QuestionVo，用TypeReference解决泛型擦除问题，确保data字段解析为QuestionVo
+        TypeReference<CommonResult<QuestionVo>> typeRef = new TypeReference<>() {
+        };
+        CommonResult<QuestionVo> commonResult = objectMapper.readValue(jsonResponse, typeRef);
+
+        // then：2. 断言
+        assertThat(commonResult.getCode()).isEqualTo(ResultCode.SUCCESS.getCode());
+        QuestionVo questionVo = commonResult.getData();
+        PageInfo<Answer> answersPage = questionVo.getAnswers();
+        assertThat(answersPage.getTotal()).isEqualTo(40);
+        assertThat(answersPage.getSize()).isEqualTo(20);
+    }
 }

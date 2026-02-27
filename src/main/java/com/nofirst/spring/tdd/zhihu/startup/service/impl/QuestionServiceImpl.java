@@ -5,6 +5,7 @@ import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotPublishedExcept
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
+import com.nofirst.spring.tdd.zhihu.startup.service.AnswerService;
 import com.nofirst.spring.tdd.zhihu.startup.service.QuestionService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.Objects;
 public class QuestionServiceImpl implements QuestionService {
 
     private QuestionMapper questionMapper;
+    private AnswerService answerService;
 
 
     @Override
@@ -33,6 +35,7 @@ public class QuestionServiceImpl implements QuestionService {
         questionVo.setUserId(question.getUserId());
         questionVo.setTitle(question.getTitle());
         questionVo.setContent(question.getContent());
+        questionVo.setAnswers(answerService.answers(question.getId(), 1, 20));
 
         return questionVo;
     }

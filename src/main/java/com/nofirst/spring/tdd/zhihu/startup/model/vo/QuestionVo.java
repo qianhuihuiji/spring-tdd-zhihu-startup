@@ -1,5 +1,7 @@
 package com.nofirst.spring.tdd.zhihu.startup.model.vo;
 
+import com.github.pagehelper.PageInfo;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import lombok.Data;
 
 /**
@@ -15,4 +17,6 @@ public class QuestionVo {
     private String title;
 
     private String content;
+
+    PageInfo<Answer> answers;
 }

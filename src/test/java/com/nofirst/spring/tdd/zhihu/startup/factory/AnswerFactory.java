@@ -4,7 +4,9 @@ package com.nofirst.spring.tdd.zhihu.startup.factory;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class AnswerFactory {
 
@@ -26,5 +28,14 @@ public class AnswerFactory {
         answer.setContent("this is a answer");
 
         return answer;
+    }
+
+    public static List<Answer> createAnswerBatch(Integer times, Integer questionId) {
+        List<Answer> answers = new ArrayList<>();
+        for (int i = 0; i < times; i++) {
+            answers.add(createAnswer(questionId));
+        }
+
+        return answers;
     }
 }

@@ -6,6 +6,7 @@ import com.nofirst.spring.tdd.zhihu.startup.factory.QuestionFactory;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
+import com.nofirst.spring.tdd.zhihu.startup.service.impl.AnswerServiceImpl;
 import com.nofirst.spring.tdd.zhihu.startup.service.impl.QuestionServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,9 @@ class QuestionServiceImplTest {
 
     @InjectMocks
     private QuestionServiceImpl questionService;
+    
+    @Mock
+    private AnswerServiceImpl answerService;
 
     @Mock
     private QuestionMapper questionMapper;
