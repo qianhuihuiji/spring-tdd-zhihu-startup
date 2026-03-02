@@ -40,4 +40,14 @@ public class AnswerVoteUpServiceImpl implements AnswerVoteUpService {
             voteMapper.insert(vote);
         }
     }
+
+    @Override
+    public void destroy(Integer answerId, AccountUser accountUser) {
+        VoteExample voteExample = new VoteExample();
+        VoteExample.Criteria criteria = voteExample.createCriteria();
+        criteria.andVotedIdEqualTo(answerId);
+        criteria.andResourceTypeEqualTo(Answer.class.getSimpleName());
+        criteria.andActionTypeEqualTo(VoteActionType.VOTE_UP.getCode());
+        voteMapper.deleteByExample(voteExample);
+    }
 }

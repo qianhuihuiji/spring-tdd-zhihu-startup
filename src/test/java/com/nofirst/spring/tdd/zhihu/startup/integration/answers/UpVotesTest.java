@@ -20,6 +20,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -68,5 +69,28 @@ public class UpVotesTest extends BaseContainerTest {
         List<Vote> votes = voteMapper.selectByExample(voteExample);
 
         assertThat(votes).size().isEqualTo(1);
+    }
+
+    @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void an_authenticated_user_can_cancel_vote_up() throws Exception {
+        // given
+        this.mockMvc.perform(post("/answers/1/up-votes"));
+        VoteExample voteExample = new VoteExample();
+        VoteExample.Criteria criteria = voteExample.createCriteria();
+        criteria.andVotedIdEqualTo(1);
+        criteria.andResourceTypeEqualTo(Answer.class.getSimpleName());
+        criteria.andActionTypeEqualTo(VoteActionType.VOTE_UP.getCode());
+        long voteCount = voteMapper.countByExample(voteExample);
+        assertThat(voteCount).isEqualTo(1);
+        // when
+        this.mockMvc.perform(delete("/answers/1/up-votes"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()));
+
+        // then
+        long voteCountAfter = voteMapper.countByExample(voteExample);
+        assertThat(voteCountAfter).isEqualTo(0);
     }
 }
