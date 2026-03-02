@@ -11,6 +11,7 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.AnswerMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.AnswerMapperExt;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapperExt;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.VoteMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
@@ -27,6 +28,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
@@ -46,6 +48,8 @@ public class AnswerServiceImplTest {
     private QuestionMapper questionMapper;
     @Mock
     private QuestionMapperExt questionMapperExt;
+    @Mock
+    private VoteMapper voteMapper;
 
     private Answer defaultAnswer;
     private AnswerDto defaultAnswerDto;
@@ -140,5 +144,30 @@ public class AnswerServiceImplTest {
         // then
         assertThat(answersPage.getTotal()).isEqualTo(10);
         assertThat(answersPage.getSize()).isEqualTo(10);
+    }
+
+    @Test
+    void answer_can_know_it_is_voted_up() {
+        // given
+        Integer answerId = 1;
+        given(voteMapper.countByExample(any())).willReturn(1L);
+
+        // when
+        Boolean votedUp = answerService.isVotedUp(answerId);
+
+        // then
+        assertThat(votedUp).isTrue();
+    }
+
+    @Test
+    void answer_can_know_up_votes_count() {
+        // given
+        Integer answerId = 1;
+        given(voteMapper.countByExample(any())).willReturn(1L);
+        // when
+        long votedUpCount = answerService.upVotesCount(answerId);
+
+        // then
+        assertThat(votedUpCount).isEqualTo(1L);
     }
 }

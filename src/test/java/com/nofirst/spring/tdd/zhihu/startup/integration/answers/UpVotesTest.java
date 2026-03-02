@@ -8,6 +8,7 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Vote;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.VoteExample;
 import com.nofirst.spring.tdd.zhihu.startup.model.enums.VoteActionType;
+import com.nofirst.spring.tdd.zhihu.startup.service.AnswerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +38,23 @@ public class UpVotesTest extends BaseContainerTest {
     @Autowired
     private VoteMapper voteMapper;
 
+    @Autowired
+    private AnswerService answerService;
+
     @BeforeEach
     public void setup() {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+    }
+
+    @BeforeEach
+    public void setupTestData() {
+        VoteExample answerExample = new VoteExample();
+        // 空条件，匹配所有数据，等价于delete * from vote
+        answerExample.createCriteria();
+        voteMapper.deleteByExample(answerExample);
     }
 
 
@@ -105,5 +117,32 @@ public class UpVotesTest extends BaseContainerTest {
         } catch (Exception e) {
             fail("Can not vote up twice", e);
         }
+    }
+
+    @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void answer_can_know_it_is_voted_up() throws Exception {
+        // given
+        this.mockMvc.perform(post("/answers/1/up-votes"));
+
+        // when
+        Boolean votedUp = answerService.isVotedUp(1);
+
+        // then
+        assertThat(votedUp).isTrue();
+    }
+
+    @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void can_know_up_votes_count() throws Exception {
+        long count = answerService.upVotesCount(1);
+        assertThat(count).isEqualTo(0L);
+        // given when
+        this.mockMvc.perform(post("/answers/1/up-votes"));
+
+        // when
+        long countAfter = answerService.upVotesCount(1);
+        assertThat(countAfter).isEqualTo(1L);
+
     }
 }

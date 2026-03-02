@@ -9,9 +9,12 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.AnswerMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.AnswerMapperExt;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapperExt;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.VoteMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.model.VoteExample;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
+import com.nofirst.spring.tdd.zhihu.startup.model.enums.VoteActionType;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.AnswerService;
 import lombok.AllArgsConstructor;
@@ -29,6 +32,7 @@ public class AnswerServiceImpl implements AnswerService {
     private final AnswerMapperExt answerMapperExt;
     private final QuestionMapper questionMapper;
     private final QuestionMapperExt questionMapperExt;
+    private final VoteMapper voteMapper;
 
     @Override
     public PageInfo<Answer> answers(Integer questionId, int pageIndex, int pageSize) {
@@ -67,5 +71,26 @@ public class AnswerServiceImpl implements AnswerService {
     @Override
     public void destroy(Integer answerId) {
         answerMapper.deleteByPrimaryKey(answerId);
+    }
+
+    @Override
+    public Boolean isVotedUp(Integer answerId) {
+        VoteExample voteExample = new VoteExample();
+        VoteExample.Criteria criteria = voteExample.createCriteria();
+        criteria.andVotedIdEqualTo(answerId);
+        criteria.andResourceTypeEqualTo(Answer.class.getSimpleName());
+        criteria.andActionTypeEqualTo(VoteActionType.VOTE_UP.getCode());
+        long count = voteMapper.countByExample(voteExample);
+        return count > 0;
+    }
+
+    @Override
+    public long upVotesCount(Integer answerId) {
+        VoteExample voteExample = new VoteExample();
+        VoteExample.Criteria criteria = voteExample.createCriteria();
+        criteria.andVotedIdEqualTo(answerId);
+        criteria.andResourceTypeEqualTo(Answer.class.getSimpleName());
+        criteria.andActionTypeEqualTo(VoteActionType.VOTE_UP.getCode());
+        return voteMapper.countByExample(voteExample);
     }
 }

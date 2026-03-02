@@ -15,4 +15,8 @@ public interface AnswerService {
     void markAsBest(Integer answerId);
 
     void destroy(Integer answerId);
+
+    Boolean isVotedUp(Integer answerId);
+
+    long upVotesCount(Integer answerId);
 }
