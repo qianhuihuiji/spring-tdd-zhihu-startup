@@ -4,12 +4,15 @@ import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotExistedExceptio
 import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotPublishedException;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
+import com.nofirst.spring.tdd.zhihu.startup.model.dto.QuestionDto;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
+import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.AnswerService;
 import com.nofirst.spring.tdd.zhihu.startup.service.QuestionService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.Objects;
 
 @Service
@@ -38,5 +41,19 @@ public class QuestionServiceImpl implements QuestionService {
         questionVo.setAnswers(answerService.answers(question.getId(), 1, 20));
 
         return questionVo;
+    }
+
+    @Override
+    public void store(QuestionDto dto, AccountUser accountUser) {
+        Date now = new Date();
+        Question question = new Question();
+        question.setUserId(accountUser.getUserId());
+        question.setTitle(dto.getTitle());
+        question.setContent(dto.getContent());
+        question.setCategoryId(dto.getCategoryId());
+        question.setCreatedAt(now);
+        question.setUpdatedAt(now);
+
+        questionMapper.insert(question);
     }
 }
