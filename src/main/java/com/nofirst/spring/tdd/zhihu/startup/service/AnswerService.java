@@ -19,4 +19,8 @@ public interface AnswerService {
     Boolean isVotedUp(Integer answerId);
 
     long upVotesCount(Integer answerId);
+
+    Boolean isVotedDown(Integer answerId);
+
+    long downVotesCount(Integer answerId);
 }

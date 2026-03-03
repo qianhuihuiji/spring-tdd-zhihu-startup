@@ -93,4 +93,25 @@ public class AnswerServiceImpl implements AnswerService {
         criteria.andActionTypeEqualTo(VoteActionType.VOTE_UP.getCode());
         return voteMapper.countByExample(voteExample);
     }
+
+    @Override
+    public Boolean isVotedDown(Integer answerId) {
+        VoteExample voteExample = new VoteExample();
+        VoteExample.Criteria criteria = voteExample.createCriteria();
+        criteria.andVotedIdEqualTo(answerId);
+        criteria.andResourceTypeEqualTo(Answer.class.getSimpleName());
+        criteria.andActionTypeEqualTo(VoteActionType.VOTE_DOWN.getCode());
+        long count = voteMapper.countByExample(voteExample);
+        return count > 0;
+    }
+
+    @Override
+    public long downVotesCount(Integer answerId) {
+        VoteExample voteExample = new VoteExample();
+        VoteExample.Criteria criteria = voteExample.createCriteria();
+        criteria.andVotedIdEqualTo(answerId);
+        criteria.andResourceTypeEqualTo(Answer.class.getSimpleName());
+        criteria.andActionTypeEqualTo(VoteActionType.VOTE_DOWN.getCode());
+        return voteMapper.countByExample(voteExample);
+    }
 }
