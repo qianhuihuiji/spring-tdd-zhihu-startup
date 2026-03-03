@@ -5,7 +5,6 @@ import com.nofirst.spring.tdd.zhihu.startup.common.ResultCode;
 import com.nofirst.spring.tdd.zhihu.startup.factory.QuestionFactory;
 import com.nofirst.spring.tdd.zhihu.startup.integration.BaseContainerTest;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
-import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.QuestionExample;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.QuestionDto;
 import org.junit.jupiter.api.BeforeAll;
@@ -59,10 +58,10 @@ public class CreateQuestionsTest extends BaseContainerTest {
 
     @Test
     void guests_may_not_create_questions() throws Exception {
-        Question question = QuestionFactory.createUnpublishedQuestion();
+        QuestionDto questionDto = QuestionFactory.createQuestionDto();
         this.mockMvc.perform(post("/questions")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(question)))
+                        .content(objectMapper.writeValueAsString(questionDto)))
 
                 .andDo(print())
                 .andExpect(status().is(401));
@@ -89,5 +88,74 @@ public class CreateQuestionsTest extends BaseContainerTest {
         long afterCount = questionMapper.countByExample(example);
         // 调用之后 questionDto 增加了 1 条
         assertThat(afterCount - beforeCount).isEqualTo(1);
+    }
+
+    @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void title_is_required() throws Exception {
+        // given
+        QuestionDto questionDto = QuestionFactory.createQuestionDto();
+        questionDto.setTitle("");
+
+        // when
+        this.mockMvc.perform(post("/questions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionDto)))
+                // then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(ResultCode.VALIDATE_FAILED.getCode()))
+                .andExpect(jsonPath("$.message").value("标题不能为空"));
+    }
+
+    @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void content_is_required() throws Exception {
+        // given
+        QuestionDto questionDto = QuestionFactory.createQuestionDto();
+        questionDto.setContent("");
+
+        // when
+        this.mockMvc.perform(post("/questions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionDto)))
+                // then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(ResultCode.VALIDATE_FAILED.getCode()))
+                .andExpect(jsonPath("$.message").value("内容不能为空"));
+    }
+
+    @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void category_id_is_required() throws Exception {
+        // given
+        QuestionDto questionDto = QuestionFactory.createQuestionDto();
+        questionDto.setCategoryId(null);
+
+        // when
+        this.mockMvc.perform(post("/questions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionDto)))
+                // then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(ResultCode.VALIDATE_FAILED.getCode()))
+                .andExpect(jsonPath("$.message").value("问题分类不能为空"));
+    }
+
+    @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void category_id_is_valid() throws Exception {
+        // given
+        QuestionDto questionDto = QuestionFactory.createQuestionDto();
+        questionDto.setCategoryId(999);
+
+        // when
+        this.mockMvc.perform(post("/questions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionDto)))
+                // then
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(jsonPath("$.code").value(ResultCode.VALIDATE_FAILED.getCode()))
+                .andExpect(jsonPath("$.message").value("问题分类不存在"));
     }
 }
