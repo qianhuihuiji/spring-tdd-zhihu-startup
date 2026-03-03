@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -54,7 +55,7 @@ public class SecurityConfig {
                 // 接口授权规则
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll() // 登录接口放行
-                        .requestMatchers("/questions").permitAll() // 公开接口放行
+                        .requestMatchers(HttpMethod.GET, "/questions").permitAll() // 除了获取问题列表之外的接口，均不放行
                         .anyRequest().authenticated() // 其他接口需认证
                 )// 异常处理器
                 .exceptionHandling(
