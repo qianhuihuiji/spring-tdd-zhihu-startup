@@ -3,6 +3,7 @@ package com.nofirst.spring.tdd.zhihu.startup.service.impl;
 import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotExistedException;
 import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotPublishedException;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapperExt;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.QuestionDto;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
@@ -20,6 +21,7 @@ import java.util.Objects;
 public class QuestionServiceImpl implements QuestionService {
 
     private QuestionMapper questionMapper;
+    private QuestionMapperExt questionMapperExt;
     private AnswerService answerService;
 
 
@@ -55,5 +57,10 @@ public class QuestionServiceImpl implements QuestionService {
         question.setUpdatedAt(now);
 
         questionMapper.insert(question);
+    }
+
+    @Override
+    public void publish(Integer questionId) {
+        questionMapperExt.publish(questionId, new Date());
     }
 }
