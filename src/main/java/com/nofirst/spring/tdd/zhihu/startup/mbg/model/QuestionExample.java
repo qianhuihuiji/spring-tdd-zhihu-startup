@@ -594,6 +594,66 @@ public class QuestionExample {
             addCriterion("category_id not between", value1, value2, "categoryId");
             return (Criteria) this;
         }
+
+        public Criteria andAnswersCountIsNull() {
+            addCriterion("answers_count is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andAnswersCountIsNotNull() {
+            addCriterion("answers_count is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andAnswersCountEqualTo(Integer value) {
+            addCriterion("answers_count =", value, "answersCount");
+            return (Criteria) this;
+        }
+
+        public Criteria andAnswersCountNotEqualTo(Integer value) {
+            addCriterion("answers_count <>", value, "answersCount");
+            return (Criteria) this;
+        }
+
+        public Criteria andAnswersCountGreaterThan(Integer value) {
+            addCriterion("answers_count >", value, "answersCount");
+            return (Criteria) this;
+        }
+
+        public Criteria andAnswersCountGreaterThanOrEqualTo(Integer value) {
+            addCriterion("answers_count >=", value, "answersCount");
+            return (Criteria) this;
+        }
+
+        public Criteria andAnswersCountLessThan(Integer value) {
+            addCriterion("answers_count <", value, "answersCount");
+            return (Criteria) this;
+        }
+
+        public Criteria andAnswersCountLessThanOrEqualTo(Integer value) {
+            addCriterion("answers_count <=", value, "answersCount");
+            return (Criteria) this;
+        }
+
+        public Criteria andAnswersCountIn(List<Integer> values) {
+            addCriterion("answers_count in", values, "answersCount");
+            return (Criteria) this;
+        }
+
+        public Criteria andAnswersCountNotIn(List<Integer> values) {
+            addCriterion("answers_count not in", values, "answersCount");
+            return (Criteria) this;
+        }
+
+        public Criteria andAnswersCountBetween(Integer value1, Integer value2) {
+            addCriterion("answers_count between", value1, value2, "answersCount");
+            return (Criteria) this;
+        }
+
+        public Criteria andAnswersCountNotBetween(Integer value1, Integer value2) {
+            addCriterion("answers_count not between", value1, value2, "answersCount");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

@@ -125,11 +125,17 @@ public class AnswerServiceImplTest {
     @Test
     void can_delete_answer() {
         // given
-
+        Question publishedQuestion = QuestionFactory.createPublishedQuestion();
+        publishedQuestion.setId(1);
+        Answer answer = AnswerFactory.createAnswer(publishedQuestion.getId());
+        publishedQuestion.setBestAnswerId(answer.getId());
+        given(answerMapper.selectByPrimaryKey(answer.getId())).willReturn(answer);
+        given(questionMapper.selectByPrimaryKey(publishedQuestion.getId())).willReturn(publishedQuestion);
         // when
         answerService.destroy(1);
 
         // then
+        verify(questionMapperExt, times(1)).updateAnswersCount(publishedQuestion.getId(), publishedQuestion.getAnswersCount() - 1);
         verify(answerMapper, times(1)).deleteByPrimaryKey(1);
     }
 

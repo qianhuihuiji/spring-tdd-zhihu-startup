@@ -30,6 +30,13 @@ public class Question implements Serializable {
      */
     private Integer categoryId;
 
+    /**
+     * 回答数量
+     *
+     * @mbg.generated
+     */
+    private Integer answersCount;
+
     private String content;
 
     private static final long serialVersionUID = 1L;
@@ -98,6 +105,14 @@ public class Question implements Serializable {
         this.categoryId = categoryId;
     }
 
+    public Integer getAnswersCount() {
+        return answersCount;
+    }
+
+    public void setAnswersCount(Integer answersCount) {
+        this.answersCount = answersCount;
+    }
+
     public String getContent() {
         return content;
     }
@@ -120,6 +135,7 @@ public class Question implements Serializable {
         sb.append(", publishedAt=").append(publishedAt);
         sb.append(", bestAnswerId=").append(bestAnswerId);
         sb.append(", categoryId=").append(categoryId);
+        sb.append(", answersCount=").append(answersCount);
         sb.append(", content=").append(content);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");

@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -95,7 +96,7 @@ public class ViewQuestionsTests extends BaseContainerTest {
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
-                .getContentAsString();
+                .getContentAsString(StandardCharsets.UTF_8);
 
         // then：1. 解析JSON为QuestionVo，用TypeReference解决泛型擦除问题，确保data字段解析为QuestionVo
         TypeReference<CommonResult<QuestionVo>> typeRef = new TypeReference<>() {
@@ -147,7 +148,7 @@ public class ViewQuestionsTests extends BaseContainerTest {
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
-                .getContentAsString();
+                .getContentAsString(StandardCharsets.UTF_8);
 
         // then：1. 解析JSON为QuestionVo，用TypeReference解决泛型擦除问题，确保data字段解析为QuestionVo
         TypeReference<CommonResult<QuestionVo>> typeRef = new TypeReference<>() {

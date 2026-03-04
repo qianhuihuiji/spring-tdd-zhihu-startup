@@ -96,6 +96,7 @@ public class DeleteAnswerTest extends BaseContainerTest {
         // given：准备测试数据
         Question questionOfJohn = QuestionFactory.createPublishedQuestion();
         questionOfJohn.setUserId(2);
+        questionOfJohn.setAnswersCount(10);
         questionMapper.insert(questionOfJohn);
         Answer answerOfJohn = AnswerFactory.createAnswer(questionOfJohn.getId());
         answerOfJohn.setUserId(2);
@@ -118,5 +119,8 @@ public class DeleteAnswerTest extends BaseContainerTest {
         // then
         long afterCount = answerMapper.countByExample(answerExample);
         assertThat(afterCount).isEqualTo(0);
+
+        Question questionAfter = questionMapper.selectByPrimaryKey(questionOfJohn.getId());
+        assertThat(questionAfter.getAnswersCount()).isEqualTo(9);
     }
 }

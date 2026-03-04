@@ -18,5 +18,7 @@ public class QuestionVo {
 
     private String content;
 
+    private Integer answersCount;
+
     PageInfo<Answer> answers;
 }

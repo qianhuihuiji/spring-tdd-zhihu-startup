@@ -18,5 +18,5 @@ public interface QuestionService {
 
     void publish(Integer questionId);
 
-    PageInfo<QuestionVo> index(Integer pageIndex, Integer pageSize, String slug, String by);
+    PageInfo<QuestionVo> index(Integer pageIndex, Integer pageSize, String slug, String by, Integer popularity, Integer unanswered);
 }

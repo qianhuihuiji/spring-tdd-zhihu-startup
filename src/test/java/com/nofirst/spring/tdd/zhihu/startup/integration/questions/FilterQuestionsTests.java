@@ -24,7 +24,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -85,7 +87,7 @@ public class FilterQuestionsTests extends BaseContainerTest {
                 .andExpect(status().isOk()).andReturn();
 
         // then
-        String json = result.getResponse().getContentAsString();
+        String json = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
 
         TypeReference<CommonResult<PageInfo<QuestionVo>>> typeRef = new TypeReference<>() {
         };
@@ -119,7 +121,7 @@ public class FilterQuestionsTests extends BaseContainerTest {
                 .andExpect(status().isOk()).andReturn();
 
         // 这里注意要指定字符编码，Windows 默认 GBK，会导致中文乱码
-        String json = result.getResponse().getContentAsString();
+        String json = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
 
         // then
         assertThat(json).contains(questionInSlug.getTitle());
@@ -146,5 +148,62 @@ public class FilterQuestionsTests extends BaseContainerTest {
         // then
         assertThat(json).contains(byJohn.getTitle());
         assertThat(json).doesNotContain(byOther.getTitle());
+    }
+
+    @Test
+    void user_can_filter_questions_by_popularity() throws Exception {
+        // given
+        Question oneAnswerQuestion = QuestionFactory.createPublishedQuestion();
+        oneAnswerQuestion.setAnswersCount(1);
+        questionMapper.insert(oneAnswerQuestion);
+        Question twoAnswerQuestion = QuestionFactory.createPublishedQuestion();
+        twoAnswerQuestion.setAnswersCount(2);
+        questionMapper.insert(twoAnswerQuestion);
+        Question threeAnswerQuestion = QuestionFactory.createPublishedQuestion();
+        threeAnswerQuestion.setAnswersCount(3);
+        questionMapper.insert(threeAnswerQuestion);
+        // when
+        MvcResult result = this.mockMvc.perform(get("/questions?pageIndex=1&pageSize=20&popularity=1"))
+                .andExpect(status().isOk()).andReturn();
+
+        // then
+        String json = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+        TypeReference<CommonResult<PageInfo<QuestionVo>>> typeRef = new TypeReference<>() {
+        };
+        CommonResult<PageInfo<QuestionVo>> commonResult = objectMapper.readValue(json, typeRef);
+        long code = commonResult.getCode();
+        assertThat(code).isEqualTo(ResultCode.SUCCESS.getCode());
+
+        PageInfo<QuestionVo> data = commonResult.getData();
+        List<Integer> answersCountList = data.getList().stream().map(QuestionVo::getAnswersCount).map(t -> (Integer) t).collect(Collectors.toList());
+
+        assertThat(Arrays.asList(3, 2, 1)).isEqualTo(answersCountList);
+    }
+
+    @Test
+    void a_user_can_filter_unanswered_questions() throws Exception {
+        // given
+        Question oneAnswerQuestion = QuestionFactory.createPublishedQuestion();
+        oneAnswerQuestion.setAnswersCount(1);
+        questionMapper.insert(oneAnswerQuestion);
+        Question noAnswerQuestion = QuestionFactory.createPublishedQuestion();
+        noAnswerQuestion.setAnswersCount(0);
+        questionMapper.insert(noAnswerQuestion);
+        // when
+        MvcResult result = this.mockMvc.perform(get("/questions?pageIndex=1&pageSize=20&unanswered=1"))
+                .andExpect(status().isOk()).andReturn();
+
+        // then
+        String json = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+        TypeReference<CommonResult<PageInfo<QuestionVo>>> typeRef = new TypeReference<>() {
+        };
+        CommonResult<PageInfo<QuestionVo>> commonResult = objectMapper.readValue(json, typeRef);
+        long code = commonResult.getCode();
+        assertThat(code).isEqualTo(ResultCode.SUCCESS.getCode());
+
+        PageInfo<QuestionVo> data = commonResult.getData();
+        List<QuestionVo> questionVos = data.getList();
+        assertThat(questionVos.size()).isEqualTo(1);
+        assertThat(questionVos.get(0).getId()).isEqualTo(noAnswerQuestion.getId());
     }
 }

@@ -59,6 +59,8 @@ public class AnswerServiceImpl implements AnswerService {
         answer.setContent(answerDto.getContent());
 
         answerMapper.insert(answer);
+
+        questionMapperExt.updateAnswersCount(questionId, question.getAnswersCount() + 1);
     }
 
 
@@ -70,6 +72,9 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Override
     public void destroy(Integer answerId) {
+        Answer answer = answerMapper.selectByPrimaryKey(answerId);
+        Question question = questionMapper.selectByPrimaryKey(answer.getQuestionId());
+        questionMapperExt.updateAnswersCount(answer.getQuestionId(), question.getAnswersCount() - 1);
         answerMapper.deleteByPrimaryKey(answerId);
     }
 

@@ -110,6 +110,8 @@ public class PostAnswersTest extends BaseContainerTest {
         // then：数据库中answer数据增加了一条
         long afterCount = answerMapper.countByExample(answerExample);
         assertThat(afterCount).isEqualTo(1);
+        Question questionAfter = questionMapper.selectByPrimaryKey(question.getId());
+        assertThat(questionAfter.getAnswersCount()).isEqualTo(1);
     }
 
     @Test
