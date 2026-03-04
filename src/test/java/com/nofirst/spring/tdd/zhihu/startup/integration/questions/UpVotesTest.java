@@ -1,14 +1,14 @@
-package com.nofirst.spring.tdd.zhihu.startup.integration.answers;
+package com.nofirst.spring.tdd.zhihu.startup.integration.questions;
 
 
 import com.nofirst.spring.tdd.zhihu.startup.common.ResultCode;
 import com.nofirst.spring.tdd.zhihu.startup.integration.BaseContainerTest;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.VoteMapper;
-import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Vote;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.VoteExample;
 import com.nofirst.spring.tdd.zhihu.startup.model.enums.VoteActionType;
-import com.nofirst.spring.tdd.zhihu.startup.service.AnswerService;
+import com.nofirst.spring.tdd.zhihu.startup.service.QuestionService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ public class UpVotesTest extends BaseContainerTest {
     private VoteMapper voteMapper;
 
     @Autowired
-    private AnswerService answerService;
+    private QuestionService questionService;
 
     @BeforeAll
     public void setup() {
@@ -63,7 +63,7 @@ public class UpVotesTest extends BaseContainerTest {
 
     @Test
     void guest_can_not_vote_up() throws Exception {
-        this.mockMvc.perform(post("/answers/1/up-votes"))
+        this.mockMvc.perform(post("/questions/1/up-votes"))
                 .andDo(print())
                 .andExpect(status().is(401));
     }
@@ -72,7 +72,7 @@ public class UpVotesTest extends BaseContainerTest {
     @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
     void authenticated_user_can_vote_up() throws Exception {
         // given
-        this.mockMvc.perform(post("/answers/1/up-votes"))
+        this.mockMvc.perform(post("/questions/1/up-votes"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()));
@@ -80,7 +80,7 @@ public class UpVotesTest extends BaseContainerTest {
         VoteExample voteExample = new VoteExample();
         VoteExample.Criteria criteria = voteExample.createCriteria();
         criteria.andVotedIdEqualTo(1);
-        criteria.andResourceTypeEqualTo(Answer.class.getSimpleName());
+        criteria.andResourceTypeEqualTo(Question.class.getSimpleName());
         criteria.andActionTypeEqualTo(VoteActionType.VOTE_UP.getCode());
         List<Vote> votes = voteMapper.selectByExample(voteExample);
 
@@ -91,16 +91,16 @@ public class UpVotesTest extends BaseContainerTest {
     @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
     void an_authenticated_user_can_cancel_vote_up() throws Exception {
         // given
-        this.mockMvc.perform(post("/answers/1/up-votes"));
+        this.mockMvc.perform(post("/questions/1/up-votes"));
         VoteExample voteExample = new VoteExample();
         VoteExample.Criteria criteria = voteExample.createCriteria();
         criteria.andVotedIdEqualTo(1);
-        criteria.andResourceTypeEqualTo(Answer.class.getSimpleName());
+        criteria.andResourceTypeEqualTo(Question.class.getSimpleName());
         criteria.andActionTypeEqualTo(VoteActionType.VOTE_UP.getCode());
         long voteCount = voteMapper.countByExample(voteExample);
         assertThat(voteCount).isEqualTo(1);
         // when
-        this.mockMvc.perform(delete("/answers/1/up-votes"))
+        this.mockMvc.perform(delete("/questions/1/up-votes"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()));
@@ -115,8 +115,8 @@ public class UpVotesTest extends BaseContainerTest {
     void can_vote_up_only_once() {
         // given
         try {
-            this.mockMvc.perform(post("/answers/1/up-votes"));
-            this.mockMvc.perform(post("/answers/1/up-votes"));
+            this.mockMvc.perform(post("/questions/1/up-votes"));
+            this.mockMvc.perform(post("/questions/1/up-votes"));
         } catch (Exception e) {
             fail("Can not vote up twice", e);
         }
@@ -124,12 +124,12 @@ public class UpVotesTest extends BaseContainerTest {
 
     @Test
     @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
-    void answer_can_know_it_is_voted_up() throws Exception {
+    void question_can_know_it_is_voted_up() throws Exception {
         // given
-        this.mockMvc.perform(post("/answers/1/up-votes"));
+        this.mockMvc.perform(post("/questions/1/up-votes"));
 
         // when
-        Boolean votedUp = answerService.isVotedUp(1);
+        Boolean votedUp = questionService.isVotedUp(1);
 
         // then
         assertThat(votedUp).isTrue();
@@ -138,14 +138,13 @@ public class UpVotesTest extends BaseContainerTest {
     @Test
     @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
     void can_know_up_votes_count() throws Exception {
-        long count = answerService.upVotesCount(1);
+        long count = questionService.upVotesCount(1);
         assertThat(count).isEqualTo(0L);
         // given when
-        this.mockMvc.perform(post("/answers/1/up-votes"));
+        this.mockMvc.perform(post("/questions/1/up-votes"));
 
         // when
-        long countAfter = answerService.upVotesCount(1);
+        long countAfter = questionService.upVotesCount(1);
         assertThat(countAfter).isEqualTo(1L);
-
     }
 }

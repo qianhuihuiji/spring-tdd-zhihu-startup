@@ -54,10 +54,10 @@ public class DownVotesTest extends BaseContainerTest {
 
     @BeforeEach
     public void setupTestData() {
-        VoteExample answerExample = new VoteExample();
+        VoteExample voteExample = new VoteExample();
         // 空条件，匹配所有数据，等价于delete * from vote
-        answerExample.createCriteria();
-        voteMapper.deleteByExample(answerExample);
+        voteExample.createCriteria();
+        voteMapper.deleteByExample(voteExample);
     }
 
 

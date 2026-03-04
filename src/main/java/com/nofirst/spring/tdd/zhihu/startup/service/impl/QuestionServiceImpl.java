@@ -8,13 +8,16 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.CategoryMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapperExt;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.UserMapper;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.VoteMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Category;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.CategoryExample;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.QuestionExample;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.User;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.UserExample;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.model.VoteExample;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.QuestionDto;
+import com.nofirst.spring.tdd.zhihu.startup.model.enums.VoteActionType;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
 import com.nofirst.spring.tdd.zhihu.startup.publisher.CustomEventPublisher;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
@@ -40,6 +43,7 @@ public class QuestionServiceImpl implements QuestionService {
     private AnswerService answerService;
     private CategoryMapper categoryMapper;
     private UserMapper userMapper;
+    private VoteMapper voteMapper;
 
     @Override
     public PageInfo<QuestionVo> index(Integer pageIndex, Integer pageSize, String slug, String by, Integer popularity, Integer unanswered) {
@@ -151,5 +155,47 @@ public class QuestionServiceImpl implements QuestionService {
 
         Question question = questionMapper.selectByPrimaryKey(questionId);
         customEventPublisher.firePublishQuestionEvent(question);
+    }
+
+    @Override
+    public Boolean isVotedUp(Integer questionId) {
+        VoteExample voteExample = new VoteExample();
+        VoteExample.Criteria criteria = voteExample.createCriteria();
+        criteria.andVotedIdEqualTo(questionId);
+        criteria.andResourceTypeEqualTo(Question.class.getSimpleName());
+        criteria.andActionTypeEqualTo(VoteActionType.VOTE_UP.getCode());
+        long count = voteMapper.countByExample(voteExample);
+        return count > 0;
+    }
+
+    @Override
+    public long upVotesCount(Integer questionId) {
+        VoteExample voteExample = new VoteExample();
+        VoteExample.Criteria criteria = voteExample.createCriteria();
+        criteria.andVotedIdEqualTo(questionId);
+        criteria.andResourceTypeEqualTo(Question.class.getSimpleName());
+        criteria.andActionTypeEqualTo(VoteActionType.VOTE_UP.getCode());
+        return voteMapper.countByExample(voteExample);
+    }
+
+    @Override
+    public Boolean isVotedDown(Integer questionId) {
+        VoteExample voteExample = new VoteExample();
+        VoteExample.Criteria criteria = voteExample.createCriteria();
+        criteria.andVotedIdEqualTo(questionId);
+        criteria.andResourceTypeEqualTo(Question.class.getSimpleName());
+        criteria.andActionTypeEqualTo(VoteActionType.VOTE_DOWN.getCode());
+        long count = voteMapper.countByExample(voteExample);
+        return count > 0;
+    }
+
+    @Override
+    public long downVotesCount(Integer questionId) {
+        VoteExample voteExample = new VoteExample();
+        VoteExample.Criteria criteria = voteExample.createCriteria();
+        criteria.andVotedIdEqualTo(questionId);
+        criteria.andResourceTypeEqualTo(Question.class.getSimpleName());
+        criteria.andActionTypeEqualTo(VoteActionType.VOTE_DOWN.getCode());
+        return voteMapper.countByExample(voteExample);
     }
 }

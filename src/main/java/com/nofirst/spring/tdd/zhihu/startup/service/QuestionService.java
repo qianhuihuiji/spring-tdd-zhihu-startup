@@ -19,4 +19,12 @@ public interface QuestionService {
     void publish(Integer questionId);
 
     PageInfo<QuestionVo> index(Integer pageIndex, Integer pageSize, String slug, String by, Integer popularity, Integer unanswered);
+
+    Boolean isVotedUp(Integer questionId);
+
+    long upVotesCount(Integer questionId);
+
+    Boolean isVotedDown(Integer questionId);
+
+    long downVotesCount(Integer questionId);
 }
