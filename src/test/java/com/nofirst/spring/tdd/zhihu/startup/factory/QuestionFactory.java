@@ -52,7 +52,7 @@ public class QuestionFactory {
     }
 
     public static List<Question> createPublishedQuestionBatch(Integer times) {
-        List<Question> questions = new ArrayList<Question>();
+        List<Question> questions = new ArrayList<>();
         for (int i = 0; i < times; i++) {
             questions.add(createPublishedQuestion());
         }

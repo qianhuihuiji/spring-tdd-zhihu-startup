@@ -74,7 +74,7 @@ public class ViewQuestionsTests extends BaseContainerTest {
         // given
 
         // when
-        this.mockMvc.perform(get("/questions"))
+        this.mockMvc.perform(get("/questions?pageIndex=1&pageSize=20"))
                 // then
                 .andExpect(status().isOk()).andReturn();
     }
