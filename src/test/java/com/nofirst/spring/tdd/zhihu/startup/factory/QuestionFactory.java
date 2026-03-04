@@ -4,7 +4,9 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.QuestionDto;
 import org.apache.commons.lang3.time.DateUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class QuestionFactory {
 
@@ -47,5 +49,14 @@ public class QuestionFactory {
         questionDto.setCategoryId(1);
 
         return questionDto;
+    }
+
+    public static List<Question> createPublishedQuestionBatch(Integer times) {
+        List<Question> questions = new ArrayList<Question>();
+        for (int i = 0; i < times; i++) {
+            questions.add(createPublishedQuestion());
+        }
+
+        return questions;
     }
 }
