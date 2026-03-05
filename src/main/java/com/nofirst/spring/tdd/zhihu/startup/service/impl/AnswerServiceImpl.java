@@ -15,6 +15,7 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.VoteExample;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
 import com.nofirst.spring.tdd.zhihu.startup.model.enums.VoteActionType;
+import com.nofirst.spring.tdd.zhihu.startup.publisher.CustomEventPublisher;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.AnswerService;
 import lombok.AllArgsConstructor;
@@ -27,6 +28,8 @@ import java.util.Objects;
 @Service
 @AllArgsConstructor
 public class AnswerServiceImpl implements AnswerService {
+
+    private CustomEventPublisher customEventPublisher;
 
     private final AnswerMapper answerMapper;
     private final AnswerMapperExt answerMapperExt;
@@ -61,6 +64,8 @@ public class AnswerServiceImpl implements AnswerService {
         answerMapper.insert(answer);
 
         questionMapperExt.updateAnswersCount(questionId, question.getAnswersCount() + 1);
+
+        customEventPublisher.firePostAnswerEvent(answer, accountUser.getUserId());
     }
 
 
