@@ -16,4 +16,9 @@
         set answers_count = #{answersCount,jdbcType=INTEGER}
         where id = #{questionId,jdbcType=INTEGER}
     </update>
+    <update id="updateSlug">
+        update question
+        set slug = #{slug,jdbcType=VARCHAR}
+        where id = #{questionId,jdbcType=INTEGER}
+    </update>
 </mapper>

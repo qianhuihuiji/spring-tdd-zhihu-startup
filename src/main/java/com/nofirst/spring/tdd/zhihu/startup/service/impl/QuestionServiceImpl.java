@@ -20,6 +20,7 @@ import com.nofirst.spring.tdd.zhihu.startup.model.dto.QuestionDto;
 import com.nofirst.spring.tdd.zhihu.startup.model.enums.VoteActionType;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
 import com.nofirst.spring.tdd.zhihu.startup.publisher.CustomEventPublisher;
+import com.nofirst.spring.tdd.zhihu.startup.queue.producer.CustomKafkaProducer;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.AnswerService;
 import com.nofirst.spring.tdd.zhihu.startup.service.QuestionService;
@@ -37,6 +38,7 @@ import java.util.Objects;
 @AllArgsConstructor
 public class QuestionServiceImpl implements QuestionService {
 
+    private CustomKafkaProducer customKafkaProducer;
     private CustomEventPublisher customEventPublisher;
     private QuestionMapper questionMapper;
     private QuestionMapperExt questionMapperExt;
@@ -147,6 +149,8 @@ public class QuestionServiceImpl implements QuestionService {
         question.setAnswersCount(0);
 
         questionMapper.insert(question);
+
+        customKafkaProducer.sendTranslateEvent(question);
     }
 
     @Override

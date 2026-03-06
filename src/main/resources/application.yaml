@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    type:  com.alibaba.druid.pool.DruidDataSource
+    type: com.alibaba.druid.pool.DruidDataSource
     url: jdbc:mysql://localhost:3306/zhihu?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
     username: root
     password: root
@@ -17,7 +17,35 @@ spring:
     sql-migration-suffixes: .sql
     validate-on-migrate: true
     baseline-on-migrate: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      auto-offset-reset: latest
+      group-id: ${translate.group}
+      key-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+    producer:
+      key-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
 mybatis:
   mapper-locations: classpath*:mapper/*.xml
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+baidu:
+  translate:
+    appId: xxxxx
+    appKey: xxxx
+translate:
+  kafka:
+    group: translate
+    topic: translate-slug

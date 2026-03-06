@@ -37,6 +37,8 @@ public class Question implements Serializable {
      */
     private Integer answersCount;
 
+    private String slug;
+
     private String content;
 
     private static final long serialVersionUID = 1L;
@@ -113,6 +115,14 @@ public class Question implements Serializable {
         this.answersCount = answersCount;
     }
 
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
+
     public String getContent() {
         return content;
     }
@@ -136,6 +146,7 @@ public class Question implements Serializable {
         sb.append(", bestAnswerId=").append(bestAnswerId);
         sb.append(", categoryId=").append(categoryId);
         sb.append(", answersCount=").append(answersCount);
+        sb.append(", slug=").append(slug);
         sb.append(", content=").append(content);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");

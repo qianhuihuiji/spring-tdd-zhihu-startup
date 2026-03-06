@@ -9,4 +9,6 @@ public interface QuestionMapperExt {
     void publish(Integer questionId, Date publishedAt);
 
     void updateAnswersCount(Integer questionId, Integer answersCount);
+
+    void updateSlug(Integer questionId, String slug);
 }
