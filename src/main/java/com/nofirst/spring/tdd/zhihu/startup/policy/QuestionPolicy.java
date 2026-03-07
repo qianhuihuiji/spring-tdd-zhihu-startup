@@ -53,4 +53,15 @@ public class QuestionPolicy {
 
         return accountUser.getUserId().equals(question.getUserId());
     }
+
+    public boolean canComment(Integer questionId) {
+        Question question = questionMapper.selectByPrimaryKey(questionId);
+        if (Objects.isNull(question)) {
+            throw new QuestionNotExistedException();
+        }
+        if (Objects.isNull(question.getPublishedAt())) {
+            throw new QuestionNotPublishedException();
+        }
+        return true;
+    }
 }
