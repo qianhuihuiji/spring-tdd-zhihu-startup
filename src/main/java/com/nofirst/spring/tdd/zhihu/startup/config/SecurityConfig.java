@@ -56,6 +56,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll() // 登录接口放行
                         .requestMatchers(HttpMethod.GET, "/questions").permitAll() // 公开接口放行
+                        .requestMatchers(HttpMethod.GET, "/comments/**").permitAll() // 评论列表接口放开
                         .anyRequest().authenticated() // 其他接口需认证
                 )// 异常处理器
                 .exceptionHandling(
