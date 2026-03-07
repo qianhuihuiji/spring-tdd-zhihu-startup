@@ -22,6 +22,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,6 +76,7 @@ public class CreateQuestionsTest extends BaseContainerTest {
     }
 
     @Test
+    @Tag("online")
     @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
     void an_authenticated_user_can_create_new_questions() throws Exception {
         // given
@@ -176,6 +178,10 @@ public class CreateQuestionsTest extends BaseContainerTest {
         QuestionExample questionExample = new QuestionExample();
         questionExample.createCriteria();
         long beforeCount = questionMapper.countByExample(questionExample);
+
+        // 百度翻译的接口有频率限制，在an_authenticated_user_can_create_new_questions用例中也会调用翻译接口
+        // 所以可以给an_authenticated_user_can_create_new_questions用例打上@Tag("online")标签，测试全部用例时排除掉
+        TimeUnit.SECONDS.sleep(3);
 
         // when
         this.mockMvc.perform(post("/questions")

@@ -8,6 +8,7 @@ import com.nofirst.spring.tdd.zhihu.startup.service.TranslatorService;
 import com.nofirst.spring.tdd.zhihu.startup.util.HttpGet;
 import com.nofirst.spring.tdd.zhihu.startup.util.MD5;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -18,6 +19,7 @@ import java.util.Map;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class BaiduTranslatorServiceImpl implements TranslatorService {
 
     private static final String TRANS_API_HOST = "https://api.fanyi.baidu.com/api/trans/vip/translate";
@@ -27,6 +29,7 @@ public class BaiduTranslatorServiceImpl implements TranslatorService {
     @Override
     public String translate(String text) {
         String transResult = getTransResult(text, "auto", "en");
+        log.info("translate: {}", transResult);
         Map<String, Object> resultMap = null;
         try {
             ObjectMapper objectMapper = new ObjectMapper();

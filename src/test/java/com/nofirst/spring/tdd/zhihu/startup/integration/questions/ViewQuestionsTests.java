@@ -115,6 +115,40 @@ public class ViewQuestionsTests extends BaseContainerTest {
 
     @Test
     @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void user_can_view_a_published_question_with_slug() throws Exception {
+        // given：准备测试数据
+        Question question = QuestionFactory.createPublishedQuestion();
+        question.setSlug("english-english");
+        questionMapper.insert(question);
+
+        // when：调用接口并获取返回结果
+        String jsonResponse = this.mockMvc.perform(
+                        get("/questions/{id}/english-english", question.getId())
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+
+        // then：1. 解析JSON为QuestionVo，用TypeReference解决泛型擦除问题，确保data字段解析为QuestionVo
+        TypeReference<CommonResult<QuestionVo>> typeRef = new TypeReference<>() {
+        };
+        CommonResult<QuestionVo> commonResult = objectMapper.readValue(jsonResponse, typeRef);
+
+        // then：2. 断言QuestionVo的核心字段（覆盖所有关键字段）
+        assertThat(commonResult.getCode()).isEqualTo(ResultCode.SUCCESS.getCode());
+
+        QuestionVo questionVo = commonResult.getData();
+        assertThat(questionVo.getId()).isEqualTo(question.getId());
+        assertThat(questionVo.getUserId()).isEqualTo(question.getUserId());
+        assertThat(questionVo.getTitle()).isEqualTo(question.getTitle());
+        assertThat(questionVo.getContent()).isEqualTo(question.getContent());
+    }
+
+    @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
     void user_can_not_view_unpublished_question() throws Exception {
         // given：准备测试数据
         Question question = QuestionFactory.createUnpublishedQuestion();

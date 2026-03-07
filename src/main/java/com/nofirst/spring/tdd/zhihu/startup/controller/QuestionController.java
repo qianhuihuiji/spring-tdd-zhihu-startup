@@ -36,8 +36,12 @@ public class QuestionController {
         return CommonResult.success(questionPage);
     }
 
-    @GetMapping("/questions/{id}")
-    public CommonResult<QuestionVo> show(@PathVariable Integer id) {
+    @GetMapping(value = {
+            "/questions/{id}",
+            "/questions/{id}/{slug:.*}"
+    })
+    public CommonResult<QuestionVo> show(@PathVariable Integer id,
+                                         @PathVariable(required = false) String slug) {
         QuestionVo questionVo = questionService.show(id);
         return CommonResult.success(questionVo);
     }

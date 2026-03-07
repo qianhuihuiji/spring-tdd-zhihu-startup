@@ -15,6 +15,7 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.VoteMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
+import com.nofirst.spring.tdd.zhihu.startup.publisher.CustomEventPublisher;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.impl.AnswerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +40,9 @@ public class AnswerServiceImplTest {
 
     @InjectMocks
     private AnswerServiceImpl answerService;
+
+    @Mock
+    private CustomEventPublisher customEventPublisher;
 
     @Mock
     private AnswerMapper answerMapper;
