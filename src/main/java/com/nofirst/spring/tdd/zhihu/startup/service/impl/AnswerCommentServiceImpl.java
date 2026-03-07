@@ -8,6 +8,7 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Comment;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.CommentExample;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.CommentDto;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.CommentVo;
+import com.nofirst.spring.tdd.zhihu.startup.publisher.CustomEventPublisher;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.AnswerCommentService;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.List;
 public class AnswerCommentServiceImpl implements AnswerCommentService {
 
     private final CommentMapper commentMapper;
+    private final CustomEventPublisher customEventPublisher;
 
 
     @Override
@@ -36,6 +38,9 @@ public class AnswerCommentServiceImpl implements AnswerCommentService {
         comment.setCreatedAt(date);
         comment.setUpdatedAt(date);
         commentMapper.insert(comment);
+        
+        // 发布评论事件，触发通知等后续处理
+        customEventPublisher.firePostCommentEvent(comment);
     }
 
     @Override

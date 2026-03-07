@@ -70,7 +70,7 @@ public class QuestionCommentsTest extends BaseContainerTest {
 
     @Test
     void guests_may_not_comment_a_question() throws Exception {
-        this.mockMvc.perform(post("/questions/1/comments"))
+        this.mockMvc.perform(post("/comments/questions/1"))
                 .andDo(print())
                 .andExpect(status().is(401));
     }
