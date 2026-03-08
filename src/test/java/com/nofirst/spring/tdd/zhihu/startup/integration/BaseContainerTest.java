@@ -1,4 +1,4 @@
-package com.nofirst.spring.tdd.zhihu.startup.intergration;
+package com.nofirst.spring.tdd.zhihu.startup.integration;
 
 import com.nofirst.spring.tdd.zhihu.startup.SpringTddZhihuStartupApplication;
 import org.springframework.boot.test.context.SpringBootTest;
