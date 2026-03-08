@@ -36,7 +36,7 @@ spring-tdd-zhihu-startup/
 │   │   │   ├── SecurityConfig.java
 │   │   │   └── MyBatisConfig.java
 │   │   ├── controller/          # 控制器层
-│   │   │   └── AuthController.java
+│   │   │   └── UserController.java
 │   │   ├── exception/           # 异常处理
 │   │   │   ├── ApiException.java
 │   │   │   └── GlobalExceptionHandler.java
@@ -46,7 +46,8 @@ spring-tdd-zhihu-startup/
 │   │   │   ├── CommentGenerator.java
 │   │   │   └── Generator.java
 │   │   ├── model/dto/           # 数据传输对象
-│   │   │   └── UserLoginDto.java
+│   │   │   ├── UserLoginDto.java
+│   │   │   └── UserRegisterDto.java
 │   │   ├── security/            # 安全认证相关
 │   │   │   ├── AccountUser.java
 │   │   │   ├── CustomUserDetailsService.java
@@ -75,9 +76,10 @@ spring-tdd-zhihu-startup/
 
 ### 1. 用户认证系统
 - **JWT Token 认证**：基于 JWT 的无状态认证机制
-- **登录接口**：`POST /auth/login`
-- **登出接口**：`GET /auth/logout`
-- **密码加密**：使用 BCrypt 进行密码加密存储
+- **注册接口**：`POST /auth/register` - 用户注册（密码自动 BCrypt 加密）
+- **登录接口**：`POST /auth/login` - 用户登录，返回 JWT Token
+- **登出接口**：`GET /auth/logout` - 退出登录（前端需配合删除本地 Token）
+- **密码加密**：使用 BCrypt 进行密码加密存储（不可逆）
 
 ### 2. 安全配置
 - Spring Security 配置
@@ -88,7 +90,7 @@ spring-tdd-zhihu-startup/
 ### 3. 数据库管理
 - **Flyway 版本控制**：数据库结构版本化管理
 - **初始表结构**：`user` 表（包含 id, name, phone, email, password, created_at, updated_at）
-- **初始化数据**：预置 3 条测试用户数据
+- **初始化数据**：预置 3 条测试用户数据（密码已 BCrypt 加密，默认密码为 `password`）
 
 ### 4. MyBatis 代码生成
 - 配置了 MyBatis Generator
@@ -154,11 +156,32 @@ mvn test
 
 ### API 示例
 
+#### 用户注册
+```bash
+curl -X POST http://localhost:8080/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "newuser",
+    "phone": "13800138000",
+    "email": "newuser@qq.com",
+    "password": "password123"
+  }'
+```
+
+响应：
+```json
+{
+  "code": 200,
+  "message": "注册成功",
+  "data": null
+}
+```
+
 #### 用户登录
 ```bash
 curl -X POST http://localhost:8080/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username": "jane", "password": "password"}'
+  -d '{"username": "Jane", "password": "password"}'
 ```
 
 响应：
@@ -169,6 +192,22 @@ curl -X POST http://localhost:8080/auth/login \
   "data": "eyJhbGciOiJIUzI1NiJ9.xxx"
 }
 ```
+
+#### 用户登出
+```bash
+curl -X GET http://localhost:8080/auth/logout
+```
+
+响应：
+```json
+{
+  "code": 200,
+  "message": "退出登录成功，请前端删除本地存储的 Token",
+  "data": null
+}
+```
+
+**测试用户**：初始化数据包含 3 个测试用户（Jane、John、Foo），登录密码均为 `password`
 
 ## 开发指南
 

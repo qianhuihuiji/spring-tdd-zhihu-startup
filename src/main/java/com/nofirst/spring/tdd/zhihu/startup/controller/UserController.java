@@ -1,7 +1,10 @@
 package com.nofirst.spring.tdd.zhihu.startup.controller;
 
 import com.nofirst.spring.tdd.zhihu.startup.common.CommonResult;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.UserMapper;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.model.User;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.UserLoginDto;
+import com.nofirst.spring.tdd.zhihu.startup.model.dto.UserRegisterDto;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,8 +14,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,17 +22,46 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The type User controller.
- */
+import java.util.Date;
+
+
 @RestController
 @RequestMapping(path = "/auth", produces = "application/json;charset=utf-8")
 @AllArgsConstructor
 public class UserController {
 
-    private AuthenticationManager authenticationManager;
-    private JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
+    private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
+
+    @PostMapping("/register")
+    public CommonResult<String> register(@RequestBody @Validated UserRegisterDto registerDto) {
+        // 1. 检查用户名是否已存在
+        User existingUser = userMapper.selectByExample(null)
+                .stream()
+                .filter(u -> u.getName().equals(registerDto.getName()))
+                .findFirst()
+                .orElse(null);
+        if (existingUser != null) {
+            return CommonResult.failed("用户名已存在");
+        }
+
+        // 2. 创建新用户，密码使用 BCrypt 加密
+        User user = new User();
+        user.setName(registerDto.getName());
+        user.setPhone(registerDto.getPhone());
+        user.setEmail(registerDto.getEmail());
+        user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
+        user.setCreatedAt(new Date());
+        user.setUpdatedAt(new Date());
+
+        // 3. 插入数据库
+        userMapper.insertSelective(user);
+
+        return CommonResult.success("注册成功");
+    }
 
     @PostMapping("/login")
     public CommonResult<String> login(@RequestBody @Validated UserLoginDto loginDTO) {
@@ -48,13 +79,10 @@ public class UserController {
     }
 
     @GetMapping("/logout")
-    public CommonResult<String> logout(HttpServletRequest request, HttpServletResponse response) {
-        // 退出登录
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null) {
-            //清除认证
-            new SecurityContextLogoutHandler().logout(request, response, auth);
-        }
-        return CommonResult.success("ok");
+    public CommonResult<String> logout() {
+        // JWT 是无状态的，服务端不保存会话信息
+        // 前端调用此接口后，自行删除本地存储的 Token 即可
+        SecurityContextHolder.clearContext();
+        return CommonResult.success("退出登录成功，请前端删除本地存储的 Token");
     }
 }
