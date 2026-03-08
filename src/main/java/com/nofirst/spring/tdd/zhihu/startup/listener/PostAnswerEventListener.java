@@ -5,9 +5,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nofirst.spring.tdd.zhihu.startup.event.PostAnswerEvent;
 import com.nofirst.spring.tdd.zhihu.startup.event.PublishQuestionEvent;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.ActivityMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.NotificationMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.SubscriptionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.UserMapper;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Activity;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Notification;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Subscription;
@@ -33,6 +35,7 @@ public class PostAnswerEventListener {
     private final NotificationMapper notificationMapper;
     private final SubscriptionMapper subscriptionMapper;
     private final UserMapper userMapper;
+    private final ActivityMapper activityMapper;
     private final ObjectMapper objectMapper;
 
     @EventListener
@@ -59,6 +62,21 @@ public class PostAnswerEventListener {
                 notificationMapper.insert(notification);
             }
         }
+    }
+
+    @EventListener
+    public void recordActivity(PostAnswerEvent event) {
+        Answer answer = event.getAnswer();
+        Activity activity = new Activity();
+        activity.setUserId(answer.getUserId());
+        activity.setType("created_answer");
+        activity.setSubjectId(answer.getId());
+        activity.setSubjectType(answer.getClass().getSimpleName());
+        Date now = new Date();
+        activity.setCreatedAt(now);
+        activity.setUpdatedAt(now);
+
+        activityMapper.insert(activity);
     }
 
     private String getData(Answer answer) {
