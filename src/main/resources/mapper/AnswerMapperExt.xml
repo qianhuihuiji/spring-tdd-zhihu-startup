@@ -9,4 +9,10 @@
         from answer
         where question_id = #{questionId,jdbcType=INTEGER}
     </select>
+    <select id="countActiveUser" resultType="com.nofirst.spring.tdd.zhihu.startup.model.vo.UserCountVo">
+        select user_id as userId, count(*) as count
+        from answer
+        where created_at >= #{beginTime}
+        group by user_id
+    </select>
 </mapper>
