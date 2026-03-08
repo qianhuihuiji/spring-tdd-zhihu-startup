@@ -33,12 +33,11 @@ public class JwtUtil {
     private Long expire;
 
     // 生成 JWT Token（携带用户ID、角色信息）
-    public String generateToken(Long userId, String username, String role) {
+    public String generateToken(Integer userId, String username) {
         // 1. 构建载荷信息
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("username", username);
-        claims.put("role", role);
         // 2. 生成 Token
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         Key key = Keys.hmacShaKeyFor(keyBytes);

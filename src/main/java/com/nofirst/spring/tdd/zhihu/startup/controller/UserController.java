@@ -3,6 +3,7 @@ package com.nofirst.spring.tdd.zhihu.startup.controller;
 import com.nofirst.spring.tdd.zhihu.startup.common.CommonResult;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.UserLoginDto;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
+import com.nofirst.spring.tdd.zhihu.startup.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,10 +26,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/auth", produces = "application/json;charset=utf-8")
 @AllArgsConstructor
-public class AuthController {
+public class UserController {
 
     private AuthenticationManager authenticationManager;
-    private JwtUtils jwtUtils;
+    private JwtUtil jwtUtil;
 
 
     @PostMapping("/login")
@@ -40,26 +42,19 @@ public class AuthController {
         AccountUser accountUser = (AccountUser) authentication.getPrincipal();
         String username = accountUser.getUsername();
         Integer userId = accountUser.getUserId();
-        String token = jwtUtils.generateToken(userId, username);
+        String token = jwtUtil.generateToken(userId, username);
         // 3. 返回 Token 给前端
         return CommonResult.success(token);
     }
 
-    /**
-     * Logout common result.
-     *
-     * @param request  the request
-     * @param response the response
-     * @return the common result
-     */
     @GetMapping("/logout")
-    public CommonResult logout(HttpServletRequest request, HttpServletResponse response) {
+    public CommonResult<String> logout(HttpServletRequest request, HttpServletResponse response) {
         // 退出登录
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
             //清除认证
             new SecurityContextLogoutHandler().logout(request, response, auth);
         }
-        return CommonResult.success(null);
+        return CommonResult.success("ok");
     }
 }
