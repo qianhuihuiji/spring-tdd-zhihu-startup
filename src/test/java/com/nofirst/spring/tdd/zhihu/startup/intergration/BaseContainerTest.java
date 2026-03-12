@@ -1,13 +1,17 @@
 package com.nofirst.spring.tdd.zhihu.startup.intergration;
 
 import com.nofirst.spring.tdd.zhihu.startup.SpringTddZhihuStartupApplication;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 @SpringBootTest(classes = SpringTddZhihuStartupApplication.class)
+@AutoConfigureMockMvc
 public abstract class BaseContainerTest {
 
     public static final MySQLContainer<?> mysqlContainer = new MySQLContainer<>("mysql:8.0")
@@ -15,6 +19,9 @@ public abstract class BaseContainerTest {
             .withUsername("root")
             .withPassword("root")
             .withReuse(true);
+
+    @Autowired
+    protected MockMvc mockMvc;
 
     static {
         // 复用配置
