@@ -58,8 +58,8 @@ spring-tdd-zhihu-startup/
 │   │   └── SpringTddZhihuStartupApplication.java
 │   └── resources/
 │       ├── db/migration/        # Flyway 数据库迁移脚本
-│       │   ├── V20260104__create_table_user.sql
-│       │   └── V20260105__init_user_data.sql
+│       │   ├── V2026010401__create_table_user.sql
+│       │   └── V2026010402__init_user_data.sql
 │       ├── mapper/              # MyBatis XML 映射文件
 │       ├── application.yaml     # 应用配置
 │       ├── generator.properties # MyBatis Generator 配置
