@@ -31,7 +31,7 @@ class QuestionServiceImplTest {
 
     @BeforeEach
     public void setup() {
-        question = QuestionFactory.createQuestion();
+        question = QuestionFactory.createPublishedQuestion();
     }
 
     @Test
