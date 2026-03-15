@@ -35,6 +35,13 @@ public class Question implements Serializable {
     private Date updatedAt;
 
     /**
+     * 发布时间
+     *
+     * @mbg.generated
+     */
+    private Date publishedAt;
+
+    /**
      * 内容
      *
      * @mbg.generated
@@ -83,6 +90,14 @@ public class Question implements Serializable {
         this.updatedAt = updatedAt;
     }
 
+    public Date getPublishedAt() {
+        return publishedAt;
+    }
+
+    public void setPublishedAt(Date publishedAt) {
+        this.publishedAt = publishedAt;
+    }
+
     public String getContent() {
         return content;
     }
@@ -102,6 +117,7 @@ public class Question implements Serializable {
         sb.append(", title=").append(title);
         sb.append(", createdAt=").append(createdAt);
         sb.append(", updatedAt=").append(updatedAt);
+        sb.append(", publishedAt=").append(publishedAt);
         sb.append(", content=").append(content);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");

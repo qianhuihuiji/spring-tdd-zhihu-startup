@@ -1,6 +1,7 @@
 package com.nofirst.spring.tdd.zhihu.startup.unit.service;
 
 import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotExistedException;
+import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotPublishedException;
 import com.nofirst.spring.tdd.zhihu.startup.factory.QuestionFactory;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
@@ -60,5 +61,19 @@ class QuestionServiceImplTest {
             questionService.show(1);
         }).isInstanceOf(QuestionNotExistedException.class)
                 .hasMessageStartingWith("question not exist");
+    }
+
+    @Test
+    void get_not_published_question_by_show_method() {
+        // given
+        this.question.setPublishedAt(null);
+        given(questionMapper.selectByPrimaryKey(1)).willReturn(this.question);
+
+        // then
+        assertThatThrownBy(() -> {
+            // when
+            questionService.show(1);
+        }).isInstanceOf(QuestionNotPublishedException.class)
+                .hasMessageStartingWith("question not publish");
     }
 }

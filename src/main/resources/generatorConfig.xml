@@ -39,7 +39,7 @@
         <javaClientGenerator type="XMLMAPPER" targetPackage="com.nofirst.spring.tdd.zhihu.startup.mbg.mapper"
                              targetProject="src\main\java"/>
         <!--生成全部表tableName设为%-->
-        <table tableName="answer">
+        <table tableName="question">
             <generatedKey column="id" sqlStatement="MySql" identity="true"/>
         </table>
     </context>

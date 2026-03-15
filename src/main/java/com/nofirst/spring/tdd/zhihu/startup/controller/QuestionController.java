@@ -24,7 +24,7 @@ public class QuestionController {
     }
 
     @GetMapping("/questions/{id}")
-    public QuestionVo show(@PathVariable Integer id) {
-        return questionService.show(id);
+    public CommonResult<QuestionVo> show(@PathVariable Integer id) {
+        return CommonResult.success(questionService.show(id));
     }
 }
