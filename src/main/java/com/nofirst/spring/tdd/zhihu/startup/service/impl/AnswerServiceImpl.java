@@ -5,9 +5,11 @@ import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotExistedExceptio
 import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotPublishedException;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.AnswerMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapperExt;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
+import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.AnswerService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,9 +23,10 @@ public class AnswerServiceImpl implements AnswerService {
 
     private final AnswerMapper answerMapper;
     private final QuestionMapper questionMapper;
+    private final QuestionMapperExt questionMapperExt;
 
 
-    public void store(Integer questionId, AnswerDto answerDto) {
+    public void store(Integer questionId, AnswerDto answerDto, AccountUser accountUser) {
         Question question = questionMapper.selectByPrimaryKey(questionId);
         if (Objects.isNull(question)) {
             throw new QuestionNotExistedException();
@@ -34,12 +37,17 @@ public class AnswerServiceImpl implements AnswerService {
         Date now = new Date();
         Answer answer = new Answer();
         answer.setQuestionId(questionId);
-        // todo:此时我们还没有引入用户登录的概念，暂且先 hard code
-        answer.setUserId(1);
+        answer.setUserId(accountUser.getUserId());
         answer.setCreatedAt(now);
         answer.setUpdatedAt(now);
         answer.setContent(answerDto.getContent());
 
         answerMapper.insert(answer);
+    }
+
+    @Override
+    public void markAsBest(Integer answerId) {
+        Answer answer = answerMapper.selectByPrimaryKey(answerId);
+        questionMapperExt.markAsBestAnswer(answer.getQuestionId(), answer.getId());
     }
 }

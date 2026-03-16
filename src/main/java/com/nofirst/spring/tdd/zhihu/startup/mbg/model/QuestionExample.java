@@ -474,6 +474,66 @@ public class QuestionExample {
             addCriterion("published_at not between", value1, value2, "publishedAt");
             return (Criteria) this;
         }
+
+        public Criteria andBestAnswerIdIsNull() {
+            addCriterion("best_answer_id is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andBestAnswerIdIsNotNull() {
+            addCriterion("best_answer_id is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andBestAnswerIdEqualTo(Integer value) {
+            addCriterion("best_answer_id =", value, "bestAnswerId");
+            return (Criteria) this;
+        }
+
+        public Criteria andBestAnswerIdNotEqualTo(Integer value) {
+            addCriterion("best_answer_id <>", value, "bestAnswerId");
+            return (Criteria) this;
+        }
+
+        public Criteria andBestAnswerIdGreaterThan(Integer value) {
+            addCriterion("best_answer_id >", value, "bestAnswerId");
+            return (Criteria) this;
+        }
+
+        public Criteria andBestAnswerIdGreaterThanOrEqualTo(Integer value) {
+            addCriterion("best_answer_id >=", value, "bestAnswerId");
+            return (Criteria) this;
+        }
+
+        public Criteria andBestAnswerIdLessThan(Integer value) {
+            addCriterion("best_answer_id <", value, "bestAnswerId");
+            return (Criteria) this;
+        }
+
+        public Criteria andBestAnswerIdLessThanOrEqualTo(Integer value) {
+            addCriterion("best_answer_id <=", value, "bestAnswerId");
+            return (Criteria) this;
+        }
+
+        public Criteria andBestAnswerIdIn(List<Integer> values) {
+            addCriterion("best_answer_id in", values, "bestAnswerId");
+            return (Criteria) this;
+        }
+
+        public Criteria andBestAnswerIdNotIn(List<Integer> values) {
+            addCriterion("best_answer_id not in", values, "bestAnswerId");
+            return (Criteria) this;
+        }
+
+        public Criteria andBestAnswerIdBetween(Integer value1, Integer value2) {
+            addCriterion("best_answer_id between", value1, value2, "bestAnswerId");
+            return (Criteria) this;
+        }
+
+        public Criteria andBestAnswerIdNotBetween(Integer value1, Integer value2) {
+            addCriterion("best_answer_id not between", value1, value2, "bestAnswerId");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

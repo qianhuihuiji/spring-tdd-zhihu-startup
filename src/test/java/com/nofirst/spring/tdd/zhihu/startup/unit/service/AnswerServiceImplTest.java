@@ -7,9 +7,11 @@ import com.nofirst.spring.tdd.zhihu.startup.factory.QuestionFactory;
 import com.nofirst.spring.tdd.zhihu.startup.matcher.AnswerMatcher;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.AnswerMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapperExt;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
+import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.impl.AnswerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +36,8 @@ class AnswerServiceImplTest {
     private AnswerMapper answerMapper;
     @Mock
     private QuestionMapper questionMapper;
+    @Mock
+    private QuestionMapperExt questionMapperExt;
 
     private Answer defaultAnswer;
     private AnswerDto defaultAnswerDto;
@@ -51,7 +55,8 @@ class AnswerServiceImplTest {
         question.setId(1);
         given(questionMapper.selectByPrimaryKey(question.getId())).willReturn(question);
         // when
-        answerService.store(1, this.defaultAnswerDto);
+        AccountUser accountUser = new AccountUser(1, "password", "username");
+        answerService.store(1, this.defaultAnswerDto, accountUser);
 
         // then
         verify(answerMapper, times(1)).insert(argThat(new AnswerMatcher(defaultAnswer)));
@@ -65,7 +70,8 @@ class AnswerServiceImplTest {
         // then
         assertThatThrownBy(() -> {
             // when
-            answerService.store(1, this.defaultAnswerDto);
+            AccountUser accountUser = new AccountUser(1, "password", "username");
+            answerService.store(1, this.defaultAnswerDto, accountUser);
         }).isInstanceOf(QuestionNotExistedException.class)
                 .hasMessageStartingWith("question not exist");
     }
@@ -80,8 +86,24 @@ class AnswerServiceImplTest {
         // then
         assertThatThrownBy(() -> {
             // when
-            answerService.store(1, this.defaultAnswerDto);
+            AccountUser accountUser = new AccountUser(1, "password", "username");
+            answerService.store(1, this.defaultAnswerDto, accountUser);
         }).isInstanceOf(QuestionNotPublishedException.class)
                 .hasMessageStartingWith("question not publish");
+    }
+
+    @Test
+    void can_mark_one_answer_as_the_best() {
+        // given
+        Question publishedQuestion = QuestionFactory.createPublishedQuestion();
+        Answer answer = AnswerFactory.createAnswer(publishedQuestion.getId());
+        publishedQuestion.setBestAnswerId(answer.getId());
+        given(answerMapper.selectByPrimaryKey(answer.getId())).willReturn(answer);
+
+        // when
+        answerService.markAsBest(1);
+
+        // then
+        verify(questionMapperExt, times(1)).markAsBestAnswer(publishedQuestion.getId(), answer.getId());
     }
 }

@@ -42,6 +42,13 @@ public class Question implements Serializable {
     private Date publishedAt;
 
     /**
+     * 最佳答案
+     *
+     * @mbg.generated
+     */
+    private Integer bestAnswerId;
+
+    /**
      * 内容
      *
      * @mbg.generated
@@ -98,6 +105,14 @@ public class Question implements Serializable {
         this.publishedAt = publishedAt;
     }
 
+    public Integer getBestAnswerId() {
+        return bestAnswerId;
+    }
+
+    public void setBestAnswerId(Integer bestAnswerId) {
+        this.bestAnswerId = bestAnswerId;
+    }
+
     public String getContent() {
         return content;
     }
@@ -118,6 +133,7 @@ public class Question implements Serializable {
         sb.append(", createdAt=").append(createdAt);
         sb.append(", updatedAt=").append(updatedAt);
         sb.append(", publishedAt=").append(publishedAt);
+        sb.append(", bestAnswerId=").append(bestAnswerId);
         sb.append(", content=").append(content);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
