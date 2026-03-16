@@ -50,4 +50,9 @@ public class AnswerServiceImpl implements AnswerService {
         Answer answer = answerMapper.selectByPrimaryKey(answerId);
         questionMapperExt.markAsBestAnswer(answer.getQuestionId(), answer.getId());
     }
+
+    @Override
+    public void destroy(Integer answerId) {
+        answerMapper.deleteByPrimaryKey(answerId);
+    }
 }

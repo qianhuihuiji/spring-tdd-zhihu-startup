@@ -106,4 +106,15 @@ class AnswerServiceImplTest {
         // then
         verify(questionMapperExt, times(1)).markAsBestAnswer(publishedQuestion.getId(), answer.getId());
     }
+
+    @Test
+    void can_delete_answer() {
+        // given
+
+        // when
+        answerService.destroy(1);
+
+        // then
+        verify(answerMapper, times(1)).deleteByPrimaryKey(1);
+    }
 }

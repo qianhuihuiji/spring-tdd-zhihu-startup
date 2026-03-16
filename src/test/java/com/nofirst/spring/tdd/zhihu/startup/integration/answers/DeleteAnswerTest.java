@@ -17,12 +17,12 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class BestAnswerTest extends BaseContainerTest {
+class DeleteAnswerTest extends BaseContainerTest {
 
     @Autowired
     private QuestionMapper questionMapper;
@@ -44,15 +44,15 @@ class BestAnswerTest extends BaseContainerTest {
     }
 
     @Test
-    void guests_can_not_mark_best_answer() throws Exception {
+    void guests_cannot_delete_answers() throws Exception {
         // 目前这个路由还不存在，但是不影响 401 的返回
-        this.mockMvc.perform(post("/answers/{id}/best", 1))
+        this.mockMvc.perform(delete("/answers/{id}", 1))
                 .andExpect(status().is(401));
     }
 
     @Test
     @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
-    void only_the_question_creator_can_mark_a_best_answer() throws Exception {
+    void unauthorized_users_cannot_delete_answers() throws Exception {
         // given：准备测试数据
         Question questionOfOtherUser = QuestionFactory.createPublishedQuestion();
         questionOfOtherUser.setUserId(1);
@@ -61,27 +61,39 @@ class BestAnswerTest extends BaseContainerTest {
         answerMapper.insert(answerOfOther);
 
         // when
-        this.mockMvc.perform(post("/answers/{answerId}/best", answerOfOther.getId())
+        this.mockMvc.perform(delete("/answers/{id}", answerOfOther.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                 ).andDo(print())
                 .andExpect(status().is(403));
+    }
 
+    @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void authorized_users_can_delete_answers() throws Exception {
         // given：准备测试数据
         Question questionOfJohn = QuestionFactory.createPublishedQuestion();
         questionOfJohn.setUserId(2);
         questionMapper.insert(questionOfJohn);
         Answer answerOfJohn = AnswerFactory.createAnswer(questionOfJohn.getId());
+        answerOfJohn.setUserId(2);
         answerMapper.insert(answerOfJohn);
 
+        AnswerExample answerExample = new AnswerExample();
+        AnswerExample.Criteria criteria = answerExample.createCriteria();
+        // John 用户的userId就是2
+        criteria.andUserIdEqualTo(2);
+        long beforeCount = answerMapper.countByExample(answerExample);
+        assertThat(beforeCount).isEqualTo(1);
+
         // when
-        this.mockMvc.perform(post("/answers/{answerId}/best", answerOfJohn.getId())
+        this.mockMvc.perform(delete("/answers/{id}", answerOfJohn.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                 ).andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()));
 
         // then
-        Question questionAfter = questionMapper.selectByPrimaryKey(questionOfJohn.getId());
-        assertThat(questionAfter.getBestAnswerId()).isEqualTo(answerOfJohn.getId());
+        long afterCount = answerMapper.countByExample(answerExample);
+        assertThat(afterCount).isEqualTo(0);
     }
 }

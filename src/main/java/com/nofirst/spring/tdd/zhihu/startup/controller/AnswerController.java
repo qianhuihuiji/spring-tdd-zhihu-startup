@@ -5,8 +5,10 @@ import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.AnswerService;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,5 +26,12 @@ public class AnswerController {
                                       @AuthenticationPrincipal AccountUser accountUser) {
         answerService.store(questionId, answerDto, accountUser);
         return CommonResult.success("success");
+    }
+
+    @DeleteMapping("/answers/{answerId}")
+    @PreAuthorize("@answerPolicy.canDelete(#answerId, #accountUser)")
+    public CommonResult<String> store(@PathVariable Integer answerId, @AuthenticationPrincipal AccountUser accountUser) {
+        answerService.destroy(answerId);
+        return CommonResult.success("ok");
     }
 }

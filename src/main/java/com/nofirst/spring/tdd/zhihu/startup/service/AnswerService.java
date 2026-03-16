@@ -9,4 +9,6 @@ public interface AnswerService {
     void store(Integer questionId, AnswerDto answerDto, AccountUser accountUser);
 
     void markAsBest(Integer answerId);
+
+    void destroy(Integer answerId);
 }
