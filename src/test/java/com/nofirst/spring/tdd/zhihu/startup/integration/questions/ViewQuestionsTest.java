@@ -2,19 +2,26 @@ package com.nofirst.spring.tdd.zhihu.startup.integration.questions;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageInfo;
 import com.nofirst.spring.tdd.zhihu.startup.common.CommonResult;
 import com.nofirst.spring.tdd.zhihu.startup.common.ResultCode;
+import com.nofirst.spring.tdd.zhihu.startup.factory.AnswerFactory;
 import com.nofirst.spring.tdd.zhihu.startup.factory.QuestionFactory;
 import com.nofirst.spring.tdd.zhihu.startup.integration.BaseContainerTest;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.AnswerMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.QuestionExample;
+import com.nofirst.spring.tdd.zhihu.startup.model.vo.AnswerVo;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -26,6 +33,8 @@ class ViewQuestionsTest extends BaseContainerTest {
 
     @Autowired
     private QuestionMapper questionMapper;
+    @Autowired
+    private AnswerMapper answerMapper;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -96,5 +105,40 @@ class ViewQuestionsTest extends BaseContainerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(ResultCode.FAILED.getCode()))
                 .andExpect(jsonPath("$.message").value("question not publish"));
+    }
+
+    @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void can_see_answers_when_view_a_published_question() throws Exception {
+        // given：准备测试数据
+        Question question = QuestionFactory.createPublishedQuestion();
+        questionMapper.insert(question);
+        List<Answer> answers = AnswerFactory.createAnswerBatch(40, question.getId());
+        for (Answer answer : answers) {
+            answerMapper.insert(answer);
+        }
+
+        // when：调用接口并获取返回结果
+        String jsonResponse = this.mockMvc.perform(
+                        get("/questions/{id}", question.getId())
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // then：1. 解析JSON为QuestionVo，用TypeReference解决泛型擦除问题，确保data字段解析为QuestionVo
+        TypeReference<CommonResult<QuestionVo>> typeRef = new TypeReference<>() {
+        };
+        CommonResult<QuestionVo> commonResult = objectMapper.readValue(jsonResponse, typeRef);
+
+        // then：2. 断言
+        assertThat(commonResult.getCode()).isEqualTo(ResultCode.SUCCESS.getCode());
+        QuestionVo questionVo = commonResult.getData();
+        PageInfo<AnswerVo> answersPage = questionVo.getAnswers();
+        assertThat(answersPage.getTotal()).isEqualTo(40);
+        assertThat(answersPage.getSize()).isEqualTo(20);
     }
 }

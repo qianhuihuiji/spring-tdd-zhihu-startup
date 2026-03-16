@@ -1,5 +1,6 @@
 package com.nofirst.spring.tdd.zhihu.startup.unit.service;
 
+import com.github.pagehelper.PageInfo;
 import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotExistedException;
 import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotPublishedException;
 import com.nofirst.spring.tdd.zhihu.startup.factory.AnswerFactory;
@@ -11,6 +12,7 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapperExt;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
+import com.nofirst.spring.tdd.zhihu.startup.model.vo.AnswerVo;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.impl.AnswerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +22,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
@@ -41,11 +47,13 @@ class AnswerServiceImplTest {
 
     private Answer defaultAnswer;
     private AnswerDto defaultAnswerDto;
+    private List<Answer> answers;
 
     @BeforeEach
     public void setup() {
         this.defaultAnswer = AnswerFactory.createAnswer(1);
         this.defaultAnswerDto = AnswerFactory.createAnswerDto();
+        this.answers = AnswerFactory.createAnswerBatch(10, 1);
     }
 
     @Test
@@ -116,5 +124,18 @@ class AnswerServiceImplTest {
 
         // then
         verify(answerMapper, times(1)).deleteByPrimaryKey(1);
+    }
+
+    @Test
+    void a_question_has_many_answers() {
+        // given
+        given(answerMapper.selectByExample(any())).willReturn(this.answers);
+
+        // when
+        PageInfo<AnswerVo> answersPage = answerService.answers(1, 1, 20);
+
+        // then
+        assertThat(answersPage.getTotal()).isEqualTo(10);
+        assertThat(answersPage.getSize()).isEqualTo(10);
     }
 }
