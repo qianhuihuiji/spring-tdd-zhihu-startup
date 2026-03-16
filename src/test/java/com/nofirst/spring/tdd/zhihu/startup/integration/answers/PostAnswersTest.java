@@ -50,7 +50,7 @@ class PostAnswersTest extends BaseContainerTest {
     @Test
     // 下面这行代码，会在 customUserDetailsService 的 loadUserByUsername() 方法中，将 John 查出来，模拟登录
     @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
-    void user_can_post_an_answer_to_a_question() throws Exception {
+    void user_can_post_an_answer_to_a_published_question() throws Exception {
         // given：准备测试数据
         Question question = QuestionFactory.createPublishedQuestion();
         questionMapper.insert(question);
@@ -71,5 +71,24 @@ class PostAnswersTest extends BaseContainerTest {
         // then：数据库中answer数据增加了一条
         long afterCount = answerMapper.countByExample(answerExample);
         assertThat(afterCount).isEqualTo(1);
+    }
+
+    @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void can_not_post_an_answer_to_an_unpublished_question() throws Exception {
+        // given：准备测试数据
+        Question question = QuestionFactory.createUnpublishedQuestion();
+        questionMapper.insert(question);
+
+        // when：调用接口并获取返回结果
+        AnswerDto answer = AnswerFactory.createAnswerDto();
+        this.mockMvc.perform(post("/questions/{id}/answers", question.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(answer))
+                )
+                // then:
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(ResultCode.FAILED.getCode()))
+                .andExpect(jsonPath("$.message").value("question not publish"));
     }
 }
