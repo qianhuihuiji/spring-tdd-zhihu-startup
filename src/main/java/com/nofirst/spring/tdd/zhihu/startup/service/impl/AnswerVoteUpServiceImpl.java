@@ -3,6 +3,7 @@ package com.nofirst.spring.tdd.zhihu.startup.service.impl;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.VoteMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Vote;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.model.VoteExample;
 import com.nofirst.spring.tdd.zhihu.startup.model.enums.VoteActionType;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.AnswerVoteUpService;
@@ -29,5 +30,15 @@ public class AnswerVoteUpServiceImpl implements AnswerVoteUpService {
         vote.setUpdatedAt(now);
 
         voteMapper.insert(vote);
+    }
+
+    @Override
+    public void destroy(Integer answerId, AccountUser accountUser) {
+        VoteExample voteExample = new VoteExample();
+        VoteExample.Criteria criteria = voteExample.createCriteria();
+        criteria.andResourceIdEqualTo(answerId);
+        criteria.andResourceTypeEqualTo(Answer.class.getSimpleName());
+        criteria.andActionTypeEqualTo(VoteActionType.VOTE_UP.getCode());
+        voteMapper.deleteByExample(voteExample);
     }
 }
