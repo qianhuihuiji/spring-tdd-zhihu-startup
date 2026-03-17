@@ -15,6 +15,7 @@ import org.springframework.security.test.context.support.WithUserDetails;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Fail.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -80,5 +81,17 @@ class UpVotesTest extends BaseContainerTest {
         // then
         long voteCountAfter = voteMapper.countByExample(voteExample);
         assertThat(voteCountAfter).isEqualTo(0);
+    }
+
+    @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void can_vote_up_only_once() {
+        // given
+        try {
+            this.mockMvc.perform(post("/answers/1/up-votes"));
+            this.mockMvc.perform(post("/answers/1/up-votes"));
+        } catch (Exception e) {
+            fail("Can not vote up twice", e);
+        }
     }
 }
