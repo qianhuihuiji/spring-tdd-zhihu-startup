@@ -6,6 +6,7 @@ import com.nofirst.spring.tdd.zhihu.startup.factory.QuestionFactory;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
+import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.impl.AnswerServiceImpl;
 import com.nofirst.spring.tdd.zhihu.startup.service.impl.QuestionServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +25,7 @@ class QuestionServiceImplTest {
 
     @InjectMocks
     private QuestionServiceImpl questionService;
-    
+
     @Mock
     private AnswerServiceImpl answerService;
 
@@ -44,7 +45,8 @@ class QuestionServiceImplTest {
         given(questionMapper.selectByPrimaryKey(1)).willReturn(this.question);
 
         // when
-        QuestionVo existedQuestion = questionService.show(1);
+        AccountUser accountUser = new AccountUser(1, "password", "user");
+        QuestionVo existedQuestion = questionService.show(1, accountUser);
 
         // then
         assertThat(existedQuestion).isNotNull();
@@ -62,7 +64,8 @@ class QuestionServiceImplTest {
         // then
         assertThatThrownBy(() -> {
             // when
-            questionService.show(1);
+            AccountUser accountUser = new AccountUser(1, "password", "user");
+            questionService.show(1, accountUser);
         }).isInstanceOf(QuestionNotExistedException.class)
                 .hasMessageStartingWith("question not exist");
     }
@@ -76,7 +79,8 @@ class QuestionServiceImplTest {
         // then
         assertThatThrownBy(() -> {
             // when
-            questionService.show(1);
+            AccountUser accountUser = new AccountUser(1, "password", "user");
+            questionService.show(1, accountUser);
         }).isInstanceOf(QuestionNotPublishedException.class)
                 .hasMessageStartingWith("question not publish");
     }

@@ -18,4 +18,8 @@ public class AnswerVo {
     private Date updatedAt;
 
     private String content;
+
+    private Byte voteType;
+
+    private Integer voteUpCount;
 }

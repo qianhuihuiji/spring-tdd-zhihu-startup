@@ -9,6 +9,8 @@ import com.nofirst.spring.tdd.zhihu.startup.matcher.AnswerMatcher;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.AnswerMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapperExt;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.VoteMapper;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.VoteMapperExt;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
@@ -44,6 +46,10 @@ class AnswerServiceImplTest {
     private QuestionMapper questionMapper;
     @Mock
     private QuestionMapperExt questionMapperExt;
+    @Mock
+    private VoteMapper voteMapper;
+    @Mock
+    private VoteMapperExt voteMapperExt;
 
     private Answer defaultAnswer;
     private AnswerDto defaultAnswerDto;
@@ -132,7 +138,8 @@ class AnswerServiceImplTest {
         given(answerMapper.selectByExample(any())).willReturn(this.answers);
 
         // when
-        PageInfo<AnswerVo> answersPage = answerService.answers(1, 1, 20);
+        AccountUser accountUser = new AccountUser(1, "password", "user");
+        PageInfo<AnswerVo> answersPage = answerService.answers(1, 1, 20, accountUser);
 
         // then
         assertThat(answersPage.getTotal()).isEqualTo(10);

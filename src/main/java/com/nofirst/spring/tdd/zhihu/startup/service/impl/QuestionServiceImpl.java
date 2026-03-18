@@ -5,6 +5,7 @@ import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotPublishedExcept
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
+import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.AnswerService;
 import com.nofirst.spring.tdd.zhihu.startup.service.QuestionService;
 import lombok.AllArgsConstructor;
@@ -21,7 +22,7 @@ public class QuestionServiceImpl implements QuestionService {
 
 
     @Override
-    public QuestionVo show(Integer id) {
+    public QuestionVo show(Integer id, AccountUser accountUser) {
         Question question = questionMapper.selectByPrimaryKey(id);
         if (Objects.isNull(question)) {
             throw new QuestionNotExistedException();
@@ -35,7 +36,7 @@ public class QuestionServiceImpl implements QuestionService {
         questionVo.setUserId(question.getUserId());
         questionVo.setTitle(question.getTitle());
         questionVo.setContent(question.getContent());
-        questionVo.setAnswers(answerService.answers(question.getId(), 1, 20)); // 此处表示，首次显示问题列表的第一页，每页20个
+        questionVo.setAnswers(answerService.answers(question.getId(), 1, 20, accountUser)); // 此处表示，首次显示问题列表的第一页，每页20个
 
         return questionVo;
     }

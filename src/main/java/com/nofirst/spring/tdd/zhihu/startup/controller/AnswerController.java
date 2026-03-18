@@ -27,8 +27,9 @@ public class AnswerController {
     @GetMapping("/questions/{questionId}/answers")
     public CommonResult<PageInfo<AnswerVo>> index(@PathVariable Integer questionId,
                                                   @RequestParam Integer pageIndex,
-                                                  @RequestParam Integer pageSize) {
-        PageInfo<AnswerVo> answerPage = answerService.answers(questionId, pageIndex, pageSize);
+                                                  @RequestParam Integer pageSize,
+                                                  @AuthenticationPrincipal AccountUser accountUser) {
+        PageInfo<AnswerVo> answerPage = answerService.answers(questionId, pageIndex, pageSize, accountUser);
         return CommonResult.success(answerPage);
     }
 

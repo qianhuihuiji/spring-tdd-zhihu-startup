@@ -2,6 +2,8 @@ package com.nofirst.spring.tdd.zhihu.startup.model.enums;
 
 public enum VoteActionType {
 
+    NOTHING((byte) 0, "未进行"),
+
     VOTE_UP((byte) 1, "赞同"),
 
     VOTE_DOWN((byte) 2, "反对");

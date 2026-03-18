@@ -23,6 +23,7 @@ public class AnswerVoteUpServiceImpl implements AnswerVoteUpService {
         VoteExample voteExample = new VoteExample();
         VoteExample.Criteria criteria = voteExample.createCriteria();
         criteria.andResourceIdEqualTo(answerId);
+        criteria.andUserIdEqualTo(accountUser.getUserId());
         criteria.andResourceTypeEqualTo(Answer.class.getSimpleName());
         criteria.andActionTypeEqualTo(VoteActionType.VOTE_UP.getCode());
         long count = voteMapper.countByExample(voteExample);

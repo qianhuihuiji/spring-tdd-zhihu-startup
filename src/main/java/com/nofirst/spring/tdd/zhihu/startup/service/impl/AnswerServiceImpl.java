@@ -8,20 +8,29 @@ import com.nofirst.spring.tdd.zhihu.startup.exception.QuestionNotPublishedExcept
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.AnswerMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapperExt;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.VoteMapper;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.VoteMapperExt;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.AnswerExample;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Vote;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.model.VoteExample;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
+import com.nofirst.spring.tdd.zhihu.startup.model.dto.VoteCountDto;
+import com.nofirst.spring.tdd.zhihu.startup.model.enums.VoteActionType;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.AnswerVo;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.AnswerService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -30,9 +39,11 @@ public class AnswerServiceImpl implements AnswerService {
     private final AnswerMapper answerMapper;
     private final QuestionMapper questionMapper;
     private final QuestionMapperExt questionMapperExt;
+    private final VoteMapper voteMapper;
+    private final VoteMapperExt voteMapperExt;
 
     @Override
-    public PageInfo<AnswerVo> answers(Integer questionId, int pageIndex, int pageSize) {
+    public PageInfo<AnswerVo> answers(Integer questionId, int pageIndex, int pageSize, AccountUser accountUser) {
         PageHelper.startPage(pageIndex, pageSize);
         AnswerExample example = new AnswerExample();
         example.createCriteria().andQuestionIdEqualTo(questionId);
@@ -47,9 +58,11 @@ public class AnswerServiceImpl implements AnswerService {
             vo.setCreatedAt(answer.getCreatedAt());
             vo.setUpdatedAt(answer.getUpdatedAt());
             vo.setContent(answer.getContent());
-
             result.add(vo);
         }
+        appendVoteType(result, accountUser.getUserId());
+        appendVoteUpCount(result);
+
         PageInfo<AnswerVo> pageResult = new PageInfo<>();
         pageResult.setTotal(answerPageInfo.getTotal());
         pageResult.setPageNum(answerPageInfo.getPageNum());
@@ -58,6 +71,53 @@ public class AnswerServiceImpl implements AnswerService {
         pageResult.setList(result);
 
         return pageResult;
+    }
+
+    private void appendVoteUpCount(List<AnswerVo> result) {
+        if (CollectionUtils.isEmpty(result)) {
+            return;
+        }
+
+        List<Integer> answerIds = result.stream().map(AnswerVo::getId).toList();
+        List<VoteCountDto> voteCountDtos = voteMapperExt.countByResource(Answer.class.getSimpleName(), VoteActionType.VOTE_UP.getCode(), answerIds);
+
+        if (CollectionUtils.isEmpty(voteCountDtos)) {
+            result.forEach(t -> t.setVoteUpCount(0));
+            return;
+        }
+
+        Map<Integer, Integer> answserMap = voteCountDtos.stream().collect(Collectors.toMap(VoteCountDto::getResourceId, VoteCountDto::getVoteCount));
+        result.forEach(t -> {
+            t.setVoteUpCount(answserMap.getOrDefault(t.getId(), 0));
+        });
+    }
+
+    private void appendVoteType(List<AnswerVo> result, Integer userId) {
+        if (CollectionUtils.isEmpty(result)) {
+            return;
+        }
+
+        List<Integer> answerIds = result.stream().map(AnswerVo::getId).toList();
+
+        VoteExample voteExample = new VoteExample();
+        voteExample.createCriteria()
+                .andResourceIdIn(answerIds)
+                .andUserIdEqualTo(userId)
+                .andResourceTypeEqualTo(Answer.class.getSimpleName());
+        List<Vote> votes = voteMapper.selectByExample(voteExample);
+        if (CollectionUtils.isEmpty(votes)) {
+            result.forEach(t -> t.setVoteType(VoteActionType.NOTHING.getCode()));
+            return;
+        }
+
+        Map<Integer, Byte> answerActionMap = votes.stream().collect(Collectors.toMap(Vote::getResourceId, Vote::getActionType));
+        result.forEach(t -> {
+            if (answerActionMap.containsKey(t.getId())) {
+                t.setVoteType(answerActionMap.get(t.getId()));
+            } else {
+                t.setVoteType(VoteActionType.NOTHING.getCode());
+            }
+        });
     }
 
 
