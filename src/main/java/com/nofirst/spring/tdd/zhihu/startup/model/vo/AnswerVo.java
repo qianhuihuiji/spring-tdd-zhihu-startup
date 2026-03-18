@@ -22,4 +22,6 @@ public class AnswerVo {
     private Byte voteType;
 
     private Integer voteUpCount;
+
+    private Integer voteDownCount;
 }

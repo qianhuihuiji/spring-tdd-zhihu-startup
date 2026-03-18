@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class UpVotesTest extends BaseContainerTest {
+class DownVotesTest extends BaseContainerTest {
 
     @Autowired
     private VoteMapper voteMapper;
@@ -63,16 +63,16 @@ class UpVotesTest extends BaseContainerTest {
 
     @Test
     void guest_can_not_vote_up() throws Exception {
-        this.mockMvc.perform(post("/answers/1/up-votes"))
+        this.mockMvc.perform(post("/answers/1/down-votes"))
                 .andDo(print())
                 .andExpect(status().is(401));
     }
 
     @Test
     @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
-    void authenticated_user_can_vote_up() throws Exception {
+    void authenticated_user_can_vote_down() throws Exception {
         // given
-        this.mockMvc.perform(post("/answers/1/up-votes"))
+        this.mockMvc.perform(post("/answers/1/down-votes"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()));
@@ -81,7 +81,7 @@ class UpVotesTest extends BaseContainerTest {
         VoteExample.Criteria criteria = voteExample.createCriteria();
         criteria.andResourceIdEqualTo(1);
         criteria.andResourceTypeEqualTo(Answer.class.getSimpleName());
-        criteria.andActionTypeEqualTo(VoteActionType.VOTE_UP.getCode());
+        criteria.andActionTypeEqualTo(VoteActionType.VOTE_DOWN.getCode());
         List<Vote> votes = voteMapper.selectByExample(voteExample);
 
         assertThat(votes).size().isEqualTo(1);
@@ -89,18 +89,18 @@ class UpVotesTest extends BaseContainerTest {
 
     @Test
     @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
-    void an_authenticated_user_can_cancel_vote_up() throws Exception {
+    void an_authenticated_user_can_cancel_vote_down() throws Exception {
         // given
-        this.mockMvc.perform(post("/answers/1/up-votes"));
+        this.mockMvc.perform(post("/answers/1/down-votes"));
         VoteExample voteExample = new VoteExample();
         VoteExample.Criteria criteria = voteExample.createCriteria();
         criteria.andResourceIdEqualTo(1);
         criteria.andResourceTypeEqualTo(Answer.class.getSimpleName());
-        criteria.andActionTypeEqualTo(VoteActionType.VOTE_UP.getCode());
+        criteria.andActionTypeEqualTo(VoteActionType.VOTE_DOWN.getCode());
         long voteCount = voteMapper.countByExample(voteExample);
         assertThat(voteCount).isEqualTo(1);
         // when
-        this.mockMvc.perform(delete("/answers/1/up-votes"))
+        this.mockMvc.perform(delete("/answers/1/down-votes"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()));
@@ -112,31 +112,32 @@ class UpVotesTest extends BaseContainerTest {
 
     @Test
     @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
-    void can_vote_up_only_once() {
-        // given
-        try {
-            this.mockMvc.perform(post("/answers/1/up-votes"));
-            this.mockMvc.perform(post("/answers/1/up-votes"));
-        } catch (Exception e) {
-            fail("Can not vote up twice", e);
-        }
-    }
-
-    @Test
-    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
-    void can_vote_up_when_it_has_voted_down() {
+    void can_vote_down_only_once() {
         // given
         try {
             this.mockMvc.perform(post("/answers/1/down-votes"));
-            this.mockMvc.perform(post("/answers/1/up-votes"));
+            this.mockMvc.perform(post("/answers/1/down-votes"));
         } catch (Exception e) {
-            fail("Can not vote up when it has voted down", e);
+            fail("Can not vote down twice", e);
+        }
+    }
+
+
+    @Test
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void can_vote_down_when_it_has_voted_up() {
+        // given
+        try {
+            this.mockMvc.perform(post("/answers/1/up-votes"));
+            this.mockMvc.perform(post("/answers/1/down-votes"));
+        } catch (Exception e) {
+            fail("Can not vote down when it has voted up", e);
         }
     }
 
     @Test
     @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
-    void answer_can_know_it_is_voted_up() throws Exception {
+    void answer_can_know_it_is_voted_down() throws Exception {
         // given
         Question publishedQuestion = QuestionFactory.createPublishedQuestion();
         questionMapper.insert(publishedQuestion);
@@ -144,8 +145,8 @@ class UpVotesTest extends BaseContainerTest {
         answerMapper.insert(answerWithoutVoting);
         Answer answerWithVoting = AnswerFactory.createAnswer(publishedQuestion.getId());
         answerMapper.insert(answerWithVoting);
-        // vote up
-        this.mockMvc.perform(post("/answers/{answerId}/up-votes", answerWithVoting.getId()));
+        // vote
+        this.mockMvc.perform(post("/answers/{answerId}/down-votes", answerWithVoting.getId()));
 
         // when
         String json = this.mockMvc.perform(get("/questions/{questionId}/answers?pageIndex=1&pageSize=20", publishedQuestion.getId()))
@@ -163,7 +164,7 @@ class UpVotesTest extends BaseContainerTest {
         assertThat(data.get(0).getVoteType()).isEqualTo(VoteActionType.NOTHING.getCode());
 
         assertThat(data.get(1).getId()).isEqualTo(answerWithVoting.getId());
-        assertThat(data.get(1).getVoteType()).isEqualTo(VoteActionType.VOTE_UP.getCode());
+        assertThat(data.get(1).getVoteType()).isEqualTo(VoteActionType.VOTE_DOWN.getCode());
 
         // 切换到1号用户进行访问
         json = this.mockMvc.perform(get("/questions/{questionId}/answers?pageIndex=1&pageSize=20", publishedQuestion.getId())
@@ -182,16 +183,16 @@ class UpVotesTest extends BaseContainerTest {
 
     @Test
     @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
-    void can_know_up_votes_count() throws Exception {
+    void can_know_down_votes_count() throws Exception {
         // given
         Question publishedQuestion = QuestionFactory.createPublishedQuestion();
         questionMapper.insert(publishedQuestion);
         Answer answer = AnswerFactory.createAnswer(publishedQuestion.getId());
         answerMapper.insert(answer);
         // 2号用户 vote up
-        this.mockMvc.perform(post("/answers/{answerId}/up-votes", answer.getId())).andDo(print());
+        this.mockMvc.perform(post("/answers/{answerId}/down-votes", answer.getId())).andDo(print());
         // 1号用户 vote up
-        this.mockMvc.perform(post("/answers/{answerId}/up-votes", answer.getId())
+        this.mockMvc.perform(post("/answers/{answerId}/down-votes", answer.getId())
                 .with(user(customUserDetailsService.loadUserByUsername("Jane")))).andDo(print());
 
         // when
@@ -206,6 +207,6 @@ class UpVotesTest extends BaseContainerTest {
         List<AnswerVo> data = pageResult.getData().getList();
         assertThat(data.size()).isEqualTo(1);
         assertThat(data.get(0).getId()).isEqualTo(answer.getId());
-        assertThat(data.get(0).getVoteUpCount()).isEqualTo(2);
+        assertThat(data.get(0).getVoteDownCount()).isEqualTo(2);
     }
 }

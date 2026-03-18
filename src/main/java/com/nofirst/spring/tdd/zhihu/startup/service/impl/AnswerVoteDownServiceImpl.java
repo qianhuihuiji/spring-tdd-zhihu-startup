@@ -6,7 +6,7 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Vote;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.VoteExample;
 import com.nofirst.spring.tdd.zhihu.startup.model.enums.VoteActionType;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
-import com.nofirst.spring.tdd.zhihu.startup.service.AnswerVoteUpService;
+import com.nofirst.spring.tdd.zhihu.startup.service.AnswerVoteDownService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +14,7 @@ import java.util.Date;
 
 @Service
 @AllArgsConstructor
-public class AnswerVoteUpServiceImpl implements AnswerVoteUpService {
+public class AnswerVoteDownServiceImpl implements AnswerVoteDownService {
 
     private VoteMapper voteMapper;
 
@@ -33,14 +33,14 @@ public class AnswerVoteUpServiceImpl implements AnswerVoteUpService {
             vote.setUserId(accountUser.getUserId());
             vote.setResourceId(answerId);
             vote.setResourceType(Answer.class.getSimpleName());
-            vote.setActionType(VoteActionType.VOTE_UP.getCode());
+            vote.setActionType(VoteActionType.VOTE_DOWN.getCode());
 
             vote.setCreatedAt(now);
             vote.setUpdatedAt(now);
 
             voteMapper.insert(vote);
         } else {
-            vote.setActionType(VoteActionType.VOTE_UP.getCode());
+            vote.setActionType(VoteActionType.VOTE_DOWN.getCode());
             vote.setUpdatedAt(now);
             voteMapper.updateByExampleSelective(vote, voteExample);
         }
@@ -52,7 +52,7 @@ public class AnswerVoteUpServiceImpl implements AnswerVoteUpService {
         VoteExample.Criteria criteria = voteExample.createCriteria();
         criteria.andResourceIdEqualTo(answerId);
         criteria.andResourceTypeEqualTo(Answer.class.getSimpleName());
-        criteria.andActionTypeEqualTo(VoteActionType.VOTE_UP.getCode());
+        criteria.andActionTypeEqualTo(VoteActionType.VOTE_DOWN.getCode());
         voteMapper.deleteByExample(voteExample);
     }
 }

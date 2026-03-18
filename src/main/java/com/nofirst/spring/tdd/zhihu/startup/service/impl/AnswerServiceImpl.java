@@ -61,7 +61,7 @@ public class AnswerServiceImpl implements AnswerService {
             result.add(vo);
         }
         appendVoteType(result, accountUser.getUserId());
-        appendVoteUpCount(result);
+        appendVoteCount(result);
 
         PageInfo<AnswerVo> pageResult = new PageInfo<>();
         pageResult.setTotal(answerPageInfo.getTotal());
@@ -73,22 +73,40 @@ public class AnswerServiceImpl implements AnswerService {
         return pageResult;
     }
 
-    private void appendVoteUpCount(List<AnswerVo> result) {
+    private void appendVoteCount(List<AnswerVo> result) {
         if (CollectionUtils.isEmpty(result)) {
             return;
         }
 
         List<Integer> answerIds = result.stream().map(AnswerVo::getId).toList();
-        List<VoteCountDto> voteCountDtos = voteMapperExt.countByResource(Answer.class.getSimpleName(), VoteActionType.VOTE_UP.getCode(), answerIds);
+        appendVoteUpCount(result, answerIds);
+        appendVoteDownCount(result, answerIds);
+    }
 
-        if (CollectionUtils.isEmpty(voteCountDtos)) {
+
+    private void appendVoteUpCount(List<AnswerVo> result, List<Integer> answerIds) {
+        List<VoteCountDto> voteUpCountList = voteMapperExt.countByResource(Answer.class.getSimpleName(), VoteActionType.VOTE_UP.getCode(), answerIds);
+        if (CollectionUtils.isEmpty(voteUpCountList)) {
             result.forEach(t -> t.setVoteUpCount(0));
             return;
         }
 
-        Map<Integer, Integer> answserMap = voteCountDtos.stream().collect(Collectors.toMap(VoteCountDto::getResourceId, VoteCountDto::getVoteCount));
+        Map<Integer, Integer> voteUpCountMap = voteUpCountList.stream().collect(Collectors.toMap(VoteCountDto::getResourceId, VoteCountDto::getVoteCount));
         result.forEach(t -> {
-            t.setVoteUpCount(answserMap.getOrDefault(t.getId(), 0));
+            t.setVoteUpCount(voteUpCountMap.getOrDefault(t.getId(), 0));
+        });
+    }
+
+    private void appendVoteDownCount(List<AnswerVo> result, List<Integer> answerIds) {
+        List<VoteCountDto> voteDownCountList = voteMapperExt.countByResource(Answer.class.getSimpleName(), VoteActionType.VOTE_DOWN.getCode(), answerIds);
+        if (CollectionUtils.isEmpty(voteDownCountList)) {
+            result.forEach(t -> t.setVoteDownCount(0));
+            return;
+        }
+
+        Map<Integer, Integer> voteDownCountMap = voteDownCountList.stream().collect(Collectors.toMap(VoteCountDto::getResourceId, VoteCountDto::getVoteCount));
+        result.forEach(t -> {
+            t.setVoteDownCount(voteDownCountMap.getOrDefault(t.getId(), 0));
         });
     }
 
