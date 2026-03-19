@@ -1,6 +1,7 @@
 package com.nofirst.spring.tdd.zhihu.startup.factory;
 
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
+import com.nofirst.spring.tdd.zhihu.startup.model.dto.QuestionDto;
 import org.apache.commons.lang3.time.DateUtils;
 
 import java.util.Date;
@@ -17,6 +18,7 @@ public class QuestionFactory {
         question.setCreatedAt(lastWeek);
         question.setUpdatedAt(lastWeek);
         question.setPublishedAt(lastWeek);
+        question.setCategoryId(1);
 
         return question;
     }
@@ -31,7 +33,17 @@ public class QuestionFactory {
         question.setCreatedAt(now);
         question.setUpdatedAt(now);
         question.setPublishedAt(null);
+        question.setCategoryId(1);
 
         return question;
+    }
+
+    public static QuestionDto createQuestionDto() {
+        QuestionDto questionDto = new QuestionDto();
+        questionDto.setTitle("this is a new question");
+        questionDto.setContent("question content");
+        questionDto.setCategoryId(1);
+
+        return questionDto;
     }
 }

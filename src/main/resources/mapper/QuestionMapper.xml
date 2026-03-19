@@ -9,6 +9,7 @@
     <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
     <result column="published_at" jdbcType="TIMESTAMP" property="publishedAt" />
     <result column="best_answer_id" jdbcType="INTEGER" property="bestAnswerId" />
+    <result column="category_id" jdbcType="INTEGER" property="categoryId" />
   </resultMap>
   <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question">
     <result column="content" jdbcType="LONGVARCHAR" property="content" />
@@ -72,7 +73,7 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    id, user_id, title, created_at, updated_at, published_at, best_answer_id
+    id, user_id, title, created_at, updated_at, published_at, best_answer_id, category_id
   </sql>
   <sql id="Blob_Column_List">
     content
@@ -131,10 +132,10 @@
     </selectKey>
     insert into question (user_id, title, created_at, 
       updated_at, published_at, best_answer_id, 
-      content)
+      category_id, content)
     values (#{userId,jdbcType=INTEGER}, #{title,jdbcType=VARCHAR}, #{createdAt,jdbcType=TIMESTAMP}, 
       #{updatedAt,jdbcType=TIMESTAMP}, #{publishedAt,jdbcType=TIMESTAMP}, #{bestAnswerId,jdbcType=INTEGER}, 
-      #{content,jdbcType=LONGVARCHAR})
+      #{categoryId,jdbcType=INTEGER}, #{content,jdbcType=LONGVARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
@@ -160,6 +161,9 @@
       <if test="bestAnswerId != null">
         best_answer_id,
       </if>
+      <if test="categoryId != null">
+        category_id,
+      </if>
       <if test="content != null">
         content,
       </if>
@@ -182,6 +186,9 @@
       </if>
       <if test="bestAnswerId != null">
         #{bestAnswerId,jdbcType=INTEGER},
+      </if>
+      <if test="categoryId != null">
+        #{categoryId,jdbcType=INTEGER},
       </if>
       <if test="content != null">
         #{content,jdbcType=LONGVARCHAR},
@@ -218,6 +225,9 @@
       <if test="row.bestAnswerId != null">
         best_answer_id = #{row.bestAnswerId,jdbcType=INTEGER},
       </if>
+      <if test="row.categoryId != null">
+        category_id = #{row.categoryId,jdbcType=INTEGER},
+      </if>
       <if test="row.content != null">
         content = #{row.content,jdbcType=LONGVARCHAR},
       </if>
@@ -235,6 +245,7 @@
       updated_at = #{row.updatedAt,jdbcType=TIMESTAMP},
       published_at = #{row.publishedAt,jdbcType=TIMESTAMP},
       best_answer_id = #{row.bestAnswerId,jdbcType=INTEGER},
+      category_id = #{row.categoryId,jdbcType=INTEGER},
       content = #{row.content,jdbcType=LONGVARCHAR}
     <if test="example != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -248,7 +259,8 @@
       created_at = #{row.createdAt,jdbcType=TIMESTAMP},
       updated_at = #{row.updatedAt,jdbcType=TIMESTAMP},
       published_at = #{row.publishedAt,jdbcType=TIMESTAMP},
-      best_answer_id = #{row.bestAnswerId,jdbcType=INTEGER}
+      best_answer_id = #{row.bestAnswerId,jdbcType=INTEGER},
+      category_id = #{row.categoryId,jdbcType=INTEGER}
     <if test="example != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -274,6 +286,9 @@
       <if test="bestAnswerId != null">
         best_answer_id = #{bestAnswerId,jdbcType=INTEGER},
       </if>
+      <if test="categoryId != null">
+        category_id = #{categoryId,jdbcType=INTEGER},
+      </if>
       <if test="content != null">
         content = #{content,jdbcType=LONGVARCHAR},
       </if>
@@ -288,6 +303,7 @@
       updated_at = #{updatedAt,jdbcType=TIMESTAMP},
       published_at = #{publishedAt,jdbcType=TIMESTAMP},
       best_answer_id = #{bestAnswerId,jdbcType=INTEGER},
+      category_id = #{categoryId,jdbcType=INTEGER},
       content = #{content,jdbcType=LONGVARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
@@ -298,7 +314,8 @@
       created_at = #{createdAt,jdbcType=TIMESTAMP},
       updated_at = #{updatedAt,jdbcType=TIMESTAMP},
       published_at = #{publishedAt,jdbcType=TIMESTAMP},
-      best_answer_id = #{bestAnswerId,jdbcType=INTEGER}
+      best_answer_id = #{bestAnswerId,jdbcType=INTEGER},
+      category_id = #{categoryId,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>
