@@ -56,4 +56,14 @@ public class QuestionServiceImpl implements QuestionService {
 
         questionMapper.insert(question);
     }
+
+    @Override
+    public void publish(Integer questionId) {
+        Question question = new Question();
+        Date now = new Date();
+        question.setId(questionId);
+        question.setUpdatedAt(now);
+        question.setPublishedAt(now);
+        questionMapper.updateByPrimaryKeySelective(question);
+    }
 }

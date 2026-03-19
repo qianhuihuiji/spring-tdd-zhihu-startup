@@ -19,7 +19,7 @@ public class QuestionPolicy {
 
     private final QuestionMapper questionMapper;
     private final AnswerMapper answerMapper;
-    
+
     public boolean canMarkAnswerAsBest(Integer answerId, AccountUser accountUser) {
         Answer answer = answerMapper.selectByPrimaryKey(answerId);
         if (Objects.isNull(answer)) {
@@ -32,6 +32,15 @@ public class QuestionPolicy {
         if (Objects.isNull(question.getPublishedAt())) {
             throw new QuestionNotPublishedException();
         }
+        return accountUser.getUserId().equals(question.getUserId());
+    }
+
+    public boolean isQuestionOwner(Integer questionId, AccountUser accountUser) {
+        Question question = questionMapper.selectByPrimaryKey(questionId);
+        if (Objects.isNull(question)) {
+            throw new QuestionNotExistedException();
+        }
+
         return accountUser.getUserId().equals(question.getUserId());
     }
 }

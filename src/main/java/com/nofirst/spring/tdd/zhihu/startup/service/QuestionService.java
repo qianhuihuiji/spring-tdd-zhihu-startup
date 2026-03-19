@@ -9,4 +9,6 @@ public interface QuestionService {
     QuestionVo show(Integer id, AccountUser accountUser);
 
     void store(QuestionDto dto, AccountUser accountUser);
+
+    void publish(Integer questionId);
 }

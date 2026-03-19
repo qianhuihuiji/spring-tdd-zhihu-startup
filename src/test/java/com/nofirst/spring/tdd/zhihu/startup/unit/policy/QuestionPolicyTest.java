@@ -90,4 +90,23 @@ class QuestionPolicyTest {
         }).isInstanceOf(QuestionNotPublishedException.class)
                 .hasMessageContaining("question not publish");
     }
+
+    @Test
+    void can_know_it_is_question_owner() {
+        // given
+        Question question = QuestionFactory.createUnpublishedQuestion();
+        question.setId(1);
+        given(questionMapper.selectByPrimaryKey(question.getId())).willReturn(question);
+
+        // when
+        AccountUser accountUser = UserFactory.createAccountUser();
+        boolean questionOwner = questionPolicy.isQuestionOwner(1, accountUser);
+        AccountUser another = UserFactory.createAccountUser();
+        another.setUserId(2);
+        boolean anotherOne = questionPolicy.isQuestionOwner(1, another);
+
+        // then
+        assertThat(questionOwner).isTrue();
+        assertThat(anotherOne).isFalse();
+    }
 }
