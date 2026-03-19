@@ -53,7 +53,7 @@ class ViewQuestionsTest extends BaseContainerTest {
         // 暂无需准备数据
 
         // when
-        this.mockMvc.perform(get("/questions"))
+        this.mockMvc.perform(get("/questions?pageIndex=1&pageSize=20"))
                 // then
                 .andExpect(status().isOk());
     }

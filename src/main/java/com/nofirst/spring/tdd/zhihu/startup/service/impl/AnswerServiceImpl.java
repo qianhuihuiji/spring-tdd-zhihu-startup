@@ -154,8 +154,13 @@ public class AnswerServiceImpl implements AnswerService {
         answer.setCreatedAt(now);
         answer.setUpdatedAt(now);
         answer.setContent(answerDto.getContent());
-
         answerMapper.insert(answer);
+
+        Question updateQuestion = new Question();
+        updateQuestion.setId(question.getId());
+        updateQuestion.setAnswersCount(question.getAnswersCount() + 1);
+        updateQuestion.setUpdatedAt(now);
+        questionMapper.updateByPrimaryKeySelective(updateQuestion);
     }
 
     @Override
@@ -166,6 +171,15 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Override
     public void destroy(Integer answerId) {
+        Answer answer = answerMapper.selectByPrimaryKey(answerId);
+        Question question = questionMapper.selectByPrimaryKey(answer.getQuestionId());
+
+        Question updateQuestion = new Question();
+        updateQuestion.setId(question.getId());
+        updateQuestion.setAnswersCount(question.getAnswersCount() - 1);
+        updateQuestion.setUpdatedAt(new Date());
+        questionMapper.updateByPrimaryKeySelective(updateQuestion);
+
         answerMapper.deleteByPrimaryKey(answerId);
     }
 }

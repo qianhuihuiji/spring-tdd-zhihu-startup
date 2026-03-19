@@ -10,6 +10,7 @@ public class QuestionVo {
     private Integer userId;
     private String title;
     private String content;
-
-    PageInfo<AnswerVo> answers;
+    private Integer answersCount;
+    
+    private PageInfo<AnswerVo> answers;
 }

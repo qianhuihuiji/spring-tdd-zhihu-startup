@@ -21,6 +21,7 @@ public class QuestionFactory {
         question.setUpdatedAt(lastWeek);
         question.setPublishedAt(lastWeek);
         question.setCategoryId(1);
+        question.setAnswersCount(0);
 
         return question;
     }
@@ -36,6 +37,7 @@ public class QuestionFactory {
         question.setUpdatedAt(now);
         question.setPublishedAt(null);
         question.setCategoryId(1);
+        question.setAnswersCount(0);
 
         return question;
     }

@@ -41,7 +41,7 @@ public class QuestionServiceImpl implements QuestionService {
     private CustomEventPublisher customEventPublisher;
 
     @Override
-    public PageInfo<QuestionVo> index(Integer pageIndex, Integer pageSize, String slug, String by) {
+    public PageInfo<QuestionVo> index(Integer pageIndex, Integer pageSize, String slug, String by, Integer popularity, Integer unanswered) {
         QuestionExample example = new QuestionExample();
         QuestionExample.Criteria criteria = example.createCriteria();
         criteria.andPublishedAtIsNotNull();
@@ -50,6 +50,13 @@ public class QuestionServiceImpl implements QuestionService {
         }
         if (StringUtils.isNotBlank(by)) {
             by(criteria, by);
+        }
+        if (Objects.nonNull(popularity) && popularity.equals(1)) {
+            popularity(example);
+        }
+
+        if (Objects.nonNull(unanswered) && unanswered.equals(1)) {
+            unanswered(criteria);
         }
 
         PageHelper.startPage(pageIndex, pageSize);
@@ -63,6 +70,7 @@ public class QuestionServiceImpl implements QuestionService {
             questionVo.setUserId(question.getUserId());
             questionVo.setTitle(question.getTitle());
             questionVo.setContent(question.getContent());
+            questionVo.setAnswersCount(question.getAnswersCount());
             result.add(questionVo);
         }
         PageInfo<QuestionVo> pageResult = new PageInfo<>();
@@ -71,6 +79,14 @@ public class QuestionServiceImpl implements QuestionService {
         pageResult.setPageSize(questionPageInfo.getPageSize());
         pageResult.setList(result);
         return pageResult;
+    }
+
+    private void unanswered(QuestionExample.Criteria criteria) {
+        criteria.andAnswersCountEqualTo(0);
+    }
+
+    private void popularity(QuestionExample example) {
+        example.setOrderByClause("answers_count desc");
     }
 
     private void by(QuestionExample.Criteria criteria, String username) {
@@ -124,6 +140,7 @@ public class QuestionServiceImpl implements QuestionService {
         question.setCategoryId(dto.getCategoryId());
         question.setCreatedAt(now);
         question.setUpdatedAt(now);
+        question.setAnswersCount(0);
 
         questionMapper.insert(question);
     }
