@@ -6,6 +6,7 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.QuestionDto;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
+import com.nofirst.spring.tdd.zhihu.startup.publisher.CustomEventPublisher;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.AnswerService;
 import com.nofirst.spring.tdd.zhihu.startup.service.QuestionService;
@@ -21,6 +22,8 @@ public class QuestionServiceImpl implements QuestionService {
 
     private QuestionMapper questionMapper;
     private AnswerService answerService;
+    
+    private CustomEventPublisher customEventPublisher;
 
 
     @Override
@@ -65,5 +68,8 @@ public class QuestionServiceImpl implements QuestionService {
         question.setUpdatedAt(now);
         question.setPublishedAt(now);
         questionMapper.updateByPrimaryKeySelective(question);
+
+        Question publishedQuestion = questionMapper.selectByPrimaryKey(questionId);
+        customEventPublisher.firePublishQuestionEvent(publishedQuestion);
     }
 }
