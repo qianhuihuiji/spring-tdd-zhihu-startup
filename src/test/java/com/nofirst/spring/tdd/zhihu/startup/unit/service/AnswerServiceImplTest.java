@@ -15,6 +15,7 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.AnswerVo;
+import com.nofirst.spring.tdd.zhihu.startup.publisher.CustomEventPublisher;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.GenericVoteService;
 import com.nofirst.spring.tdd.zhihu.startup.service.impl.AnswerServiceImpl;
@@ -53,6 +54,8 @@ class AnswerServiceImplTest {
     private VoteMapperExt voteMapperExt;
     @Mock
     private GenericVoteService genericVoteService;
+    @Mock
+    private CustomEventPublisher customEventPublisher;
 
     private Answer defaultAnswer;
     private AnswerDto defaultAnswerDto;

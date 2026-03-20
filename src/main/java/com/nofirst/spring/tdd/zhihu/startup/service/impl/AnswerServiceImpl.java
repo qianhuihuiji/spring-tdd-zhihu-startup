@@ -13,6 +13,7 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
 import com.nofirst.spring.tdd.zhihu.startup.model.enums.VoteActionType;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.AnswerVo;
+import com.nofirst.spring.tdd.zhihu.startup.publisher.CustomEventPublisher;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.AnswerService;
 import com.nofirst.spring.tdd.zhihu.startup.service.GenericVoteService;
@@ -33,6 +34,8 @@ public class AnswerServiceImpl implements AnswerService {
     private final QuestionMapper questionMapper;
     private final QuestionMapperExt questionMapperExt;
     private final GenericVoteService genericVoteService;
+
+    private final CustomEventPublisher customEventPublisher;
 
     @Override
     public PageInfo<AnswerVo> answers(Integer questionId, int pageIndex, int pageSize, AccountUser accountUser) {
@@ -100,6 +103,8 @@ public class AnswerServiceImpl implements AnswerService {
         updateQuestion.setAnswersCount(question.getAnswersCount() + 1);
         updateQuestion.setUpdatedAt(now);
         questionMapper.updateByPrimaryKeySelective(updateQuestion);
+
+        customEventPublisher.firePostAnswerEvent(answer, accountUser.getUserId());
     }
 
     @Override

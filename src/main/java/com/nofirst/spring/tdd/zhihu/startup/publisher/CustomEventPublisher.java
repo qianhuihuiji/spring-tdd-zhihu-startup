@@ -1,6 +1,8 @@
 package com.nofirst.spring.tdd.zhihu.startup.publisher;
 
+import com.nofirst.spring.tdd.zhihu.startup.event.PostAnswerEvent;
 import com.nofirst.spring.tdd.zhihu.startup.event.PublishQuestionEvent;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -17,5 +19,10 @@ public class CustomEventPublisher {
     public void firePublishQuestionEvent(Question question) {
         PublishQuestionEvent publishQuestionEvent = new PublishQuestionEvent(question);
         applicationEventPublisher.publishEvent(publishQuestionEvent);
+    }
+
+    public void firePostAnswerEvent(Answer answer, Integer userId) {
+        PostAnswerEvent postAnswerEvent = new PostAnswerEvent(answer, userId);
+        applicationEventPublisher.publishEvent(postAnswerEvent);
     }
 }
