@@ -1,5 +1,6 @@
 package com.nofirst.spring.tdd.zhihu.startup.unit.service;
 
+import com.nofirst.spring.tdd.zhihu.startup.config.BaiduTranslatorConfig;
 import com.nofirst.spring.tdd.zhihu.startup.service.impl.BaiduTranslatorServiceImpl;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
