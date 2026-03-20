@@ -5,19 +5,27 @@ import com.nofirst.spring.tdd.zhihu.startup.common.ResultCode;
 import com.nofirst.spring.tdd.zhihu.startup.factory.QuestionFactory;
 import com.nofirst.spring.tdd.zhihu.startup.integration.BaseContainerTest;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.QuestionExample;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.QuestionDto;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 class CreateQuestionsTest extends BaseContainerTest {
 
@@ -134,5 +142,43 @@ class CreateQuestionsTest extends BaseContainerTest {
                 .andDo(print())
                 .andExpect(jsonPath("$.code").value(ResultCode.VALIDATE_FAILED.getCode()))
                 .andExpect(jsonPath("$.message").value("问题分类不存在"));
+    }
+
+    @Test
+    @Tag("online")
+    @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
+    void get_slug_when_create_a_question() throws Exception {
+        // given
+        QuestionDto questionDto = QuestionFactory.createQuestionDto();
+        questionDto.setTitle("英语 英语");
+        QuestionExample questionExample = new QuestionExample();
+        questionExample.createCriteria();
+        long beforeCount = questionMapper.countByExample(questionExample);
+
+        // 百度翻译的接口有频率限制，在an_authenticated_user_can_create_new_questions用例中也会调用翻译接口
+        // 所以可以给an_authenticated_user_can_create_new_questions用例打上@Tag("online")标签，测试全部用例时排除掉
+        TimeUnit.SECONDS.sleep(3);
+
+        // when
+        this.mockMvc.perform(post("/questions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(questionDto)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()));
+
+        await()
+                .pollInterval(Duration.ofSeconds(3))
+                // 依赖于实际的时间，时间设大一点是为了让kafka消费到消息
+                .atMost(10, SECONDS)
+                .untilAsserted(() -> {
+                    // then
+                    long afterCount = questionMapper.countByExample(questionExample);
+                    // 调用之后 question 增加了 1 条
+                    assertThat(afterCount - beforeCount).isEqualTo(1);
+                    List<Question> questions = questionMapper.selectByExample(questionExample);
+                    Question result = questions.get(0);
+                    assertThat(result.getSlug()).isEqualTo("english-english");
+                });
     }
 }

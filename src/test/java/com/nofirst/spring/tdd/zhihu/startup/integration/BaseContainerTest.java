@@ -7,28 +7,35 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 @SpringBootTest(classes = SpringTddZhihuStartupApplication.class)
 @AutoConfigureMockMvc
 public abstract class BaseContainerTest {
 
+
     public static final MySQLContainer<?> mysqlContainer = new MySQLContainer<>("mysql:8.0")
             .withDatabaseName("zhihu")
             .withUsername("root")
             .withPassword("root")
             .withReuse(true);
-
-    @Autowired
-    protected MockMvc mockMvc;
+    public static final KafkaContainer kafkaContainer = new KafkaContainer(
+            DockerImageName.parse("confluentinc/cp-kafka:7.6.1")
+    ).withReuse(true);
 
     static {
         // 复用配置
         TestcontainersConfiguration.getInstance().updateUserConfig("testcontainers.reuse.enable", "true");
         // 启动容器，确保端口提前分配
         mysqlContainer.start();
+        kafkaContainer.start();
     }
+
+    @Autowired
+    protected MockMvc mockMvc;
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
@@ -36,6 +43,7 @@ public abstract class BaseContainerTest {
         registry.add("spring.datasource.password", mysqlContainer::getPassword);
         registry.add("spring.datasource.username", mysqlContainer::getUsername);
 
-
+        // 将 Testcontainers 启动的 Kafka 容器的实际连接地址，动态覆盖到 Spring 上下文的 spring.kafka.bootstrap-servers 配置项中
+        registry.add("spring.kafka.bootstrap-servers", kafkaContainer::getBootstrapServers);
     }
 }

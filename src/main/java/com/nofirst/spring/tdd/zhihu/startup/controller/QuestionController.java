@@ -43,8 +43,13 @@ public class QuestionController {
         return CommonResult.success("ok");
     }
 
-    @GetMapping("/questions/{id}")
-    public CommonResult<QuestionVo> show(@PathVariable Integer id, @AuthenticationPrincipal AccountUser accountUser) {
+    @GetMapping(value = {
+            "/questions/{id}",
+            "/questions/{id}/{slug:.*}"
+    })
+    public CommonResult<QuestionVo> show(@PathVariable Integer id,
+                                         @PathVariable(required = false) String slug,
+                                         @AuthenticationPrincipal AccountUser accountUser) {
         return CommonResult.success(questionService.show(id, accountUser));
     }
 }

@@ -17,6 +17,7 @@ import com.nofirst.spring.tdd.zhihu.startup.model.dto.QuestionDto;
 import com.nofirst.spring.tdd.zhihu.startup.model.enums.VoteActionType;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
 import com.nofirst.spring.tdd.zhihu.startup.publisher.CustomEventPublisher;
+import com.nofirst.spring.tdd.zhihu.startup.queue.producer.CustomKafkaProducer;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.AnswerService;
 import com.nofirst.spring.tdd.zhihu.startup.service.GenericVoteService;
@@ -41,6 +42,7 @@ public class QuestionServiceImpl implements QuestionService {
     private final AnswerService answerService;
     private final CustomEventPublisher customEventPublisher;
     private final GenericVoteService genericVoteService;
+    private final CustomKafkaProducer customKafkaProducer;
 
     @Override
     public PageInfo<QuestionVo> index(AccountUser accountUser, Integer pageIndex, Integer pageSize, String slug, String by, Integer popularity, Integer unanswered) {
@@ -165,6 +167,7 @@ public class QuestionServiceImpl implements QuestionService {
         question.setAnswersCount(0);
 
         questionMapper.insert(question);
+        customKafkaProducer.sendTranslateEvent(question);
     }
 
     @Override
