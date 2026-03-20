@@ -11,6 +11,8 @@ public class QuestionVo {
     private String title;
     private String content;
     private Integer answersCount;
-    
+
+    private Byte voteType;
+
     private PageInfo<AnswerVo> answers;
 }

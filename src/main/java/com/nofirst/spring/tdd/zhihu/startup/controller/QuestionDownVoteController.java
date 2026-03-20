@@ -1,7 +1,7 @@
 package com.nofirst.spring.tdd.zhihu.startup.controller;
 
 import com.nofirst.spring.tdd.zhihu.startup.common.CommonResult;
-import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Answer;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.GenericVoteService;
 import lombok.AllArgsConstructor;
@@ -13,19 +13,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AllArgsConstructor
-public class AnswerUpVoteController {
+public class QuestionDownVoteController {
 
     private GenericVoteService genericVoteService;
 
-    @PostMapping("/answers/{answerId}/up-votes")
-    public CommonResult<String> store(@PathVariable Integer answerId, @AuthenticationPrincipal AccountUser accountUser) {
-        genericVoteService.voteUp(Answer.class.getSimpleName(), answerId, accountUser);
+    @PostMapping("/questions/{questionId}/down-votes")
+    public CommonResult<String> store(@PathVariable Integer questionId, @AuthenticationPrincipal AccountUser accountUser) {
+        genericVoteService.voteDown(Question.class.getSimpleName(), questionId, accountUser);
         return CommonResult.success("ok");
     }
 
-    @DeleteMapping("/answers/{answerId}/up-votes")
-    public CommonResult<String> destroy(@PathVariable Integer answerId, @AuthenticationPrincipal AccountUser accountUser) {
-        genericVoteService.cancelVoteUp(Answer.class.getSimpleName(), answerId, accountUser);
+    @DeleteMapping("/questions/{questionId}/down-votes")
+    public CommonResult<String> destroy(@PathVariable Integer questionId, @AuthenticationPrincipal AccountUser accountUser) {
+        genericVoteService.cancelVoteDown(Question.class.getSimpleName(), questionId, accountUser);
         return CommonResult.success("ok");
     }
 }
