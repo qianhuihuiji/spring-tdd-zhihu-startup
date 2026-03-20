@@ -1,21 +1,30 @@
 package com.nofirst.spring.tdd.zhihu.startup.service.impl;
 
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.VoteMapper;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.VoteMapperExt;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Vote;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.VoteExample;
+import com.nofirst.spring.tdd.zhihu.startup.model.dto.VoteCountDto;
 import com.nofirst.spring.tdd.zhihu.startup.model.enums.VoteActionType;
+import com.nofirst.spring.tdd.zhihu.startup.model.vo.BaseVoteVo;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.GenericVoteService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class GenericVoteServiceImpl implements GenericVoteService {
 
     private VoteMapper voteMapper;
+    private VoteMapperExt voteMapperExt;
 
     @Override
     public void voteUp(String resourceType, Integer resourceId, AccountUser accountUser) {
@@ -35,6 +44,87 @@ public class GenericVoteServiceImpl implements GenericVoteService {
     @Override
     public void cancelVoteDown(String resourceType, Integer resourceId, AccountUser accountUser) {
         destroy(resourceType, resourceId, accountUser, VoteActionType.VOTE_DOWN);
+    }
+
+    @Override
+    public <T extends BaseVoteVo> void setVoteCounts(
+            List<T> vos,
+            Class<?> resourceClass,
+            VoteActionType voteActionType,
+            Function<T, Integer> idExtractor) {
+
+        if (CollectionUtils.isEmpty(vos)) {
+            return;
+        }
+
+        List<Integer> resourceIds = vos.stream().map(idExtractor).toList();
+        List<VoteCountDto> voteCounts = voteMapperExt.countByResource(
+                resourceClass.getSimpleName(),
+                voteActionType.getCode(),
+                resourceIds);
+
+        if (CollectionUtils.isEmpty(voteCounts)) {
+            vos.forEach(vo -> setVoteCountByType(vo, voteActionType, 0));
+            return;
+        }
+
+        Map<Integer, Integer> voteCountMap = voteCounts.stream()
+                .collect(Collectors.toMap(VoteCountDto::getResourceId, VoteCountDto::getVoteCount));
+
+        vos.forEach(vo -> {
+            Integer id = idExtractor.apply(vo);
+            Integer count = voteCountMap.getOrDefault(id, 0);
+            setVoteCountByType(vo, voteActionType, count);
+        });
+    }
+
+    @Override
+    public <T extends BaseVoteVo> void setUserVoteTypes(
+            List<T> vos,
+            Class<?> resourceClass,
+            Integer userId,
+            Function<T, Integer> idExtractor) {
+
+        if (CollectionUtils.isEmpty(vos) || userId == null) {
+            return;
+        }
+
+        List<Integer> resourceIds = vos.stream().map(idExtractor).toList();
+
+        VoteExample voteExample = new VoteExample();
+        voteExample.createCriteria()
+                .andResourceIdIn(resourceIds)
+                .andUserIdEqualTo(userId)
+                .andResourceTypeEqualTo(resourceClass.getSimpleName());
+        List<Vote> votes = voteMapper.selectByExample(voteExample);
+
+        if (CollectionUtils.isEmpty(votes)) {
+            vos.forEach(vo -> vo.setVoteType(VoteActionType.NOTHING.getCode()));
+            return;
+        }
+
+        Map<Integer, Byte> voteTypeMap = votes.stream()
+                .collect(Collectors.toMap(Vote::getResourceId, Vote::getActionType));
+
+        vos.forEach(vo -> {
+            Integer id = idExtractor.apply(vo);
+            if (voteTypeMap.containsKey(id)) {
+                vo.setVoteType(voteTypeMap.get(id));
+            } else {
+                vo.setVoteType(VoteActionType.NOTHING.getCode());
+            }
+        });
+    }
+
+    /**
+     * 根据投票类型设置投票数量
+     */
+    private <T extends BaseVoteVo> void setVoteCountByType(T vo, VoteActionType voteActionType, int count) {
+        switch (voteActionType) {
+            case VOTE_UP -> vo.setVoteUpCount(count);
+            case VOTE_DOWN -> vo.setVoteDownCount(count);
+            default -> {}
+        }
     }
 
     private void store(String resourceType, Integer resourceId, AccountUser accountUser, VoteActionType actionType) {

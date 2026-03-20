@@ -14,10 +14,12 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.model.QuestionExample;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.User;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.UserExample;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.QuestionDto;
+import com.nofirst.spring.tdd.zhihu.startup.model.enums.VoteActionType;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.QuestionVo;
 import com.nofirst.spring.tdd.zhihu.startup.publisher.CustomEventPublisher;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.AnswerService;
+import com.nofirst.spring.tdd.zhihu.startup.service.GenericVoteService;
 import com.nofirst.spring.tdd.zhihu.startup.service.QuestionService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -33,15 +35,15 @@ import java.util.Objects;
 @AllArgsConstructor
 public class QuestionServiceImpl implements QuestionService {
 
-    private QuestionMapper questionMapper;
-    private CategoryMapper categoryMapper;
-    private UserMapper userMapper;
-    private AnswerService answerService;
-
-    private CustomEventPublisher customEventPublisher;
+    private final QuestionMapper questionMapper;
+    private final CategoryMapper categoryMapper;
+    private final UserMapper userMapper;
+    private final AnswerService answerService;
+    private final CustomEventPublisher customEventPublisher;
+    private final GenericVoteService genericVoteService;
 
     @Override
-    public PageInfo<QuestionVo> index(Integer pageIndex, Integer pageSize, String slug, String by, Integer popularity, Integer unanswered) {
+    public PageInfo<QuestionVo> index(AccountUser accountUser, Integer pageIndex, Integer pageSize, String slug, String by, Integer popularity, Integer unanswered) {
         QuestionExample example = new QuestionExample();
         QuestionExample.Criteria criteria = example.createCriteria();
         criteria.andPublishedAtIsNotNull();
@@ -73,12 +75,32 @@ public class QuestionServiceImpl implements QuestionService {
             questionVo.setAnswersCount(question.getAnswersCount());
             result.add(questionVo);
         }
+
+        if (Objects.nonNull(accountUser)) {
+            appendVoteType(result, accountUser.getUserId());
+        }
+        appendVoteCount(result);
+
         PageInfo<QuestionVo> pageResult = new PageInfo<>();
         pageResult.setTotal(questionPageInfo.getTotal());
         pageResult.setPageNum(questionPageInfo.getPageNum());
         pageResult.setPageSize(questionPageInfo.getPageSize());
         pageResult.setList(result);
         return pageResult;
+    }
+
+
+    private void appendVoteCount(List<QuestionVo> result) {
+        if (CollectionUtils.isEmpty(result)) {
+            return;
+        }
+
+        genericVoteService.setVoteCounts(result, Question.class, VoteActionType.VOTE_UP, QuestionVo::getId);
+        genericVoteService.setVoteCounts(result, Question.class, VoteActionType.VOTE_DOWN, QuestionVo::getId);
+    }
+
+    private void appendVoteType(List<QuestionVo> result, Integer userId) {
+        genericVoteService.setUserVoteTypes(result, Question.class, userId, QuestionVo::getId);
     }
 
     private void unanswered(QuestionExample.Criteria criteria) {

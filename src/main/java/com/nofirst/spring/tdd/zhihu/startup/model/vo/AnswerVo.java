@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class AnswerVo {
+public class AnswerVo extends BaseVoteVo {
 
     private Integer id;
 
@@ -18,10 +18,4 @@ public class AnswerVo {
     private Date updatedAt;
 
     private String content;
-
-    private Byte voteType;
-
-    private Integer voteUpCount;
-
-    private Integer voteDownCount;
 }

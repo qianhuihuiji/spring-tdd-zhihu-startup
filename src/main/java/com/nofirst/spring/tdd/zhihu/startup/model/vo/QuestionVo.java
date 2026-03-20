@@ -4,15 +4,13 @@ import com.github.pagehelper.PageInfo;
 import lombok.Data;
 
 @Data
-public class QuestionVo {
+public class QuestionVo extends BaseVoteVo {
 
     private Integer id;
     private Integer userId;
     private String title;
     private String content;
     private Integer answersCount;
-
-    private Byte voteType;
 
     private PageInfo<AnswerVo> answers;
 }

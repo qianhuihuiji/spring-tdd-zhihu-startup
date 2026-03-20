@@ -16,6 +16,7 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.AnswerDto;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.AnswerVo;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
+import com.nofirst.spring.tdd.zhihu.startup.service.GenericVoteService;
 import com.nofirst.spring.tdd.zhihu.startup.service.impl.AnswerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,8 @@ class AnswerServiceImplTest {
     private VoteMapper voteMapper;
     @Mock
     private VoteMapperExt voteMapperExt;
+    @Mock
+    private GenericVoteService genericVoteService;
 
     private Answer defaultAnswer;
     private AnswerDto defaultAnswerDto;

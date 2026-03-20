@@ -6,7 +6,7 @@ import com.github.pagehelper.PageInfo;
 import com.nofirst.spring.tdd.zhihu.startup.common.CommonResult;
 import com.nofirst.spring.tdd.zhihu.startup.factory.AnswerFactory;
 import com.nofirst.spring.tdd.zhihu.startup.factory.QuestionFactory;
-import com.nofirst.spring.tdd.zhihu.startup.integration.AbstractVoteDownTest;
+import com.nofirst.spring.tdd.zhihu.startup.integration.AbstractVoteUpTest;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.AnswerMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.QuestionMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.VoteMapper;
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class DownVotesTest extends AbstractVoteDownTest {
+class AnswerUpVotesTest extends AbstractVoteUpTest {
 
     @Autowired
     private VoteMapper voteMapper;
@@ -68,7 +68,7 @@ class DownVotesTest extends AbstractVoteDownTest {
 
     @Test
     @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
-    void answer_can_know_it_is_voted_down() throws Exception {
+    void answer_can_know_it_is_voted_up() throws Exception {
         // given
         Question publishedQuestion = QuestionFactory.createPublishedQuestion();
         questionMapper.insert(publishedQuestion);
@@ -76,8 +76,8 @@ class DownVotesTest extends AbstractVoteDownTest {
         answerMapper.insert(answerWithoutVoting);
         Answer answerWithVoting = AnswerFactory.createAnswer(publishedQuestion.getId());
         answerMapper.insert(answerWithVoting);
-        // vote
-        this.mockMvc.perform(post(getDownVoteUrl(answerWithVoting.getId())));
+        // vote up
+        this.mockMvc.perform(post(getUpVoteUrl(answerWithVoting.getId())));
 
         // when
         String json = this.mockMvc.perform(get("/questions/{questionId}/answers?pageIndex=1&pageSize=20", publishedQuestion.getId()))
@@ -95,7 +95,7 @@ class DownVotesTest extends AbstractVoteDownTest {
         assertThat(data.get(0).getVoteType()).isEqualTo(VoteActionType.NOTHING.getCode());
 
         assertThat(data.get(1).getId()).isEqualTo(answerWithVoting.getId());
-        assertThat(data.get(1).getVoteType()).isEqualTo(VoteActionType.VOTE_DOWN.getCode());
+        assertThat(data.get(1).getVoteType()).isEqualTo(VoteActionType.VOTE_UP.getCode());
 
         // 切换到1号用户进行访问
         json = this.mockMvc.perform(get("/questions/{questionId}/answers?pageIndex=1&pageSize=20", publishedQuestion.getId())
@@ -114,16 +114,16 @@ class DownVotesTest extends AbstractVoteDownTest {
 
     @Test
     @WithUserDetails(value = "John", userDetailsServiceBeanName = "customUserDetailsService")
-    void can_know_down_votes_count() throws Exception {
+    void can_know_up_votes_count() throws Exception {
         // given
         Question publishedQuestion = QuestionFactory.createPublishedQuestion();
         questionMapper.insert(publishedQuestion);
         Answer answer = AnswerFactory.createAnswer(publishedQuestion.getId());
         answerMapper.insert(answer);
         // 2号用户 vote up
-        this.mockMvc.perform(post(getDownVoteUrl(answer.getId()))).andDo(print());
+        this.mockMvc.perform(post(getUpVoteUrl(answer.getId()))).andDo(print());
         // 1号用户 vote up
-        this.mockMvc.perform(post(getDownVoteUrl(answer.getId()))
+        this.mockMvc.perform(post(getUpVoteUrl(answer.getId()))
                 .with(user(customUserDetailsService.loadUserByUsername("Jane")))).andDo(print());
 
         // when
@@ -138,6 +138,6 @@ class DownVotesTest extends AbstractVoteDownTest {
         List<AnswerVo> data = pageResult.getData().getList();
         assertThat(data.size()).isEqualTo(1);
         assertThat(data.get(0).getId()).isEqualTo(answer.getId());
-        assertThat(data.get(0).getVoteDownCount()).isEqualTo(2);
+        assertThat(data.get(0).getVoteUpCount()).isEqualTo(2);
     }
 }

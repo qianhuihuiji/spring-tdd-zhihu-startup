@@ -26,13 +26,14 @@ public class QuestionController {
     private QuestionService questionService;
 
     @GetMapping("/questions")
-    public CommonResult<PageInfo<QuestionVo>> index(@RequestParam @NotNull Integer pageIndex,
+    public CommonResult<PageInfo<QuestionVo>> index(@AuthenticationPrincipal AccountUser accountUser,
+                                                    @RequestParam @NotNull Integer pageIndex,
                                                     @RequestParam @NotNull Integer pageSize,
                                                     @RequestParam(required = false) String slug,
                                                     @RequestParam(required = false) String by,
                                                     @RequestParam(required = false) Integer popularity,
                                                     @RequestParam(required = false) Integer unanswered) {
-        PageInfo<QuestionVo> questionPage = questionService.index(pageIndex, pageSize, slug, by, popularity, unanswered);
+        PageInfo<QuestionVo> questionPage = questionService.index(accountUser, pageIndex, pageSize, slug, by, popularity, unanswered);
         return CommonResult.success(questionPage);
     }
 
