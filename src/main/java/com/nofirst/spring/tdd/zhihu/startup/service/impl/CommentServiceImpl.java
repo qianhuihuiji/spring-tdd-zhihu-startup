@@ -8,6 +8,7 @@ import com.nofirst.spring.tdd.zhihu.startup.mbg.model.CommentExample;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.CommentDto;
 import com.nofirst.spring.tdd.zhihu.startup.model.enums.VoteActionType;
 import com.nofirst.spring.tdd.zhihu.startup.model.vo.CommentVo;
+import com.nofirst.spring.tdd.zhihu.startup.publisher.CustomEventPublisher;
 import com.nofirst.spring.tdd.zhihu.startup.security.AccountUser;
 import com.nofirst.spring.tdd.zhihu.startup.service.CommentService;
 import com.nofirst.spring.tdd.zhihu.startup.service.GenericVoteService;
@@ -25,6 +26,7 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentMapper commentMapper;
     private final GenericVoteService genericVoteService;
+    private final CustomEventPublisher customEventPublisher;
 
 
     @Override
@@ -38,6 +40,9 @@ public class CommentServiceImpl implements CommentService {
         comment.setCreatedAt(date);
         comment.setUpdatedAt(date);
         commentMapper.insert(comment);
+
+        // 发布评论事件，触发通知等后续处理
+        customEventPublisher.firePostCommentEvent(comment);
     }
 
     @Override
