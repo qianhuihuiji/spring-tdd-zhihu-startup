@@ -38,7 +38,7 @@ public class QuestionController {
     }
 
     @PostMapping("/questions")
-    public CommonResult<String> store(@RequestBody @ValidCategory QuestionDto dto, @AuthenticationPrincipal AccountUser accountUser) {
+    public CommonResult<String> store(@RequestBody @ValidCategory @Validated QuestionDto dto, @AuthenticationPrincipal AccountUser accountUser) {
         questionService.store(dto, accountUser);
         return CommonResult.success("ok");
     }
