@@ -3,8 +3,10 @@ package com.nofirst.spring.tdd.zhihu.startup.listener;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nofirst.spring.tdd.zhihu.startup.event.PublishQuestionEvent;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.ActivityMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.NotificationMapper;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.mapper.UserMapper;
+import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Activity;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Notification;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.User;
@@ -26,7 +28,24 @@ public class PublishQuestionEventListener {
 
     private final NotificationMapper notificationMapper;
     private final UserMapper userMapper;
+    private final ActivityMapper activityMapper;
     private final ObjectMapper objectMapper;
+
+
+    @EventListener
+    public void recordActivity(PublishQuestionEvent event) {
+        Question question = event.getQuestion();
+        Activity activity = new Activity();
+        activity.setUserId(question.getUserId());
+        activity.setType("published_question");
+        activity.setSubjectId(question.getId());
+        activity.setSubjectType(question.getClass().getSimpleName());
+        Date now = new Date();
+        activity.setCreatedAt(now);
+        activity.setUpdatedAt(now);
+
+        activityMapper.insert(activity);
+    }
 
     @EventListener
     public void notifyInvitedUsers(PublishQuestionEvent event) {

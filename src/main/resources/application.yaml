@@ -44,9 +44,9 @@ mybatis:
 
 baidu:
   translate:
-    appId: xxxxxxxxxx
-    appKey: xxxxxxxxx
-    
+    appId: 20171222000107417
+    appKey: 6Uu3hVI9MVNmd5MZMgYQ
+
 translate:
   kafka:
     group: translate
