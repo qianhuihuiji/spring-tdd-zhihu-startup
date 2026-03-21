@@ -5,9 +5,7 @@ import com.nofirst.spring.tdd.zhihu.startup.model.dto.UserCountDto;
 import java.util.Date;
 import java.util.List;
 
-public interface QuestionMapperExt {
-
-    void markAsBestAnswer(Integer questionId, Integer answerId);
+public interface AnswerMapperExt {
 
     List<UserCountDto> countActiveUser(Date beginTime);
 }

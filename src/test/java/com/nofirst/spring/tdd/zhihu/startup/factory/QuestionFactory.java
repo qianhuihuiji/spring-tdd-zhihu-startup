@@ -2,7 +2,6 @@ package com.nofirst.spring.tdd.zhihu.startup.factory;
 
 import com.nofirst.spring.tdd.zhihu.startup.mbg.model.Question;
 import com.nofirst.spring.tdd.zhihu.startup.model.dto.QuestionDto;
-import org.apache.commons.lang3.time.DateUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -11,15 +10,15 @@ import java.util.List;
 public class QuestionFactory {
 
     public static Question createPublishedQuestion() {
-        Date lastWeek = DateUtils.addWeeks(new Date(), -1);
+        Date now = new Date();
 
         Question question = new Question();
         question.setUserId(1);
         question.setTitle("this is a question");
         question.setContent("this is content");
-        question.setCreatedAt(lastWeek);
-        question.setUpdatedAt(lastWeek);
-        question.setPublishedAt(lastWeek);
+        question.setCreatedAt(now);
+        question.setUpdatedAt(now);
+        question.setPublishedAt(now);
         question.setCategoryId(1);
         question.setAnswersCount(0);
 
